@@ -243,7 +243,56 @@ Candidates include:
 
 The control plane should own only the coordination semantics that are otherwise missing.
 
-## 8. Open architectural questions
+
+## 8. Acquisition / ingestion layer
+
+A second major source of overhead is **getting material into a form that AI can actually work with**.
+
+Examples include:
+
+- moving information from one chat to another;
+- extracting transcripts or subtitles from video;
+- downloading source material from inconvenient interfaces;
+- converting PDFs, webpages, audio, or exports into usable artifacts;
+- preserving source metadata and provenance;
+- handing the normalized artifact to another agent or workstream.
+
+These steps are often mechanically necessary but do not require human judgment. They therefore belong in the system wherever they can be automated safely.
+
+The intended flow is:
+
+```text
+Source URL / chat / video / PDF / repository
+                    |
+                    v
+          Acquisition / ingestion
+                    |
+                    v
+     normalized artifact + provenance
+                    |
+                    v
+         Knowledge Gateway / adapters
+                    |
+                    v
+          Work Control Plane
+                    |
+                    v
+       analysis / writing / AI workers
+```
+
+The desired user experience is close to:
+
+> "Use this source."
+
+The system should then obtain the material, convert it when needed, preserve provenance, and make it available to the relevant workstream without forcing the user to perform the plumbing manually.
+
+This layer should be conservative about permissions, access restrictions, credentials, and destructive operations. It should not bypass access controls or treat every source as legally or technically retrievable. When acquisition cannot be automated, that limitation should become an explicit dependency rather than an invisible burden on the user's memory.
+
+A useful engineering heuristic for this project is:
+
+> If an action is repeatedly required only to prepare material for the next intellectual step, and it does not require human judgment, it is a candidate for elimination through automation.
+
+## 9. Open architectural questions
 
 - Where should control metadata live?
 - How are checkpoints produced and validated?
