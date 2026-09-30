@@ -25,6 +25,16 @@ This roadmap is intentionally small. The project should prove the control model 
 - [ ] Show resumable work.
 - [ ] Show AI-autonomous work separately.
 
+
+## Phase 2.5 — acquisition / ingestion
+
+- [ ] Define a generic `Source -> Artifact` ingestion contract.
+- [ ] Support at least a few representative source types: chat/thread references, webpages, PDFs, video/transcripts, and repository files.
+- [ ] Preserve provenance: original source, retrieval time, transformations, and derived artifact identity.
+- [ ] Normalize acquired material into reusable artifacts that can be passed between workstreams and AI workers.
+- [ ] Represent failed or unavailable acquisition as an explicit dependency instead of requiring the user to remember the problem.
+- [ ] Prefer existing production connectors/download/transcription infrastructure where available rather than rebuilding it.
+
 ## Phase 3 — continuation
 
 - [ ] Add "Continue" actions.
