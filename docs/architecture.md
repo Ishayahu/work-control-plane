@@ -196,6 +196,34 @@ The scheduler should reason over:
 
 A central design goal is that intellectually attractive work must not silently displace more important real-world obligations.
 
+
+### Learning plans and readiness
+
+A higher-level plan may aggregate several projects/workstreams that are executed in different chats. The first concrete example is a learning curriculum with multiple subjects.
+
+The control plane should support a roll-up view that can derive:
+
+- progress by subject;
+- overall curriculum progress;
+- the latest checkpoint for each subject;
+- whether the subject is currently schedulable;
+- prerequisites that must be resolved first.
+
+This does not necessarily require a new source of truth or even a new core entity in the first schema. It may initially be a derived portfolio/program view over existing Projects and Workstreams.
+
+A key distinction is **readiness**.
+
+A workstream may be important and unfinished but still not be executable now because of a prerequisite such as:
+
+- buying physical components;
+- preparing equipment;
+- installing or configuring software;
+- obtaining a book/document;
+- completing an earlier lesson;
+- waiting for a real-world event.
+
+These prerequisites should be represented as Dependencies and, when actionable, converted into scheduler-visible preparation tasks. When the dependency is resolved, the original workstream should automatically become eligible for scheduling again.
+
 ## 6. Event loop
 
 The long-term control loop may resemble:
