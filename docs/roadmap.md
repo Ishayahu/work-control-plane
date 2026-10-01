@@ -47,6 +47,9 @@ This roadmap is intentionally small. The project should prove the control model 
 - [ ] Connect priorities, deadlines, expected duration, and available time.
 - [ ] Distinguish human-required work from autonomous AI work.
 - [ ] Protect higher-priority real-world obligations from optional deep dives.
+- [ ] Add readiness-aware scheduling: do not offer blocked workstreams as immediately executable.
+- [ ] Surface actionable prerequisites (purchase, setup, source acquisition, prerequisite lesson) as separate preparation tasks.
+- [ ] Add a learning-plan roll-up that aggregates progress/checkpoints across subjects studied in separate chats.
 
 ## Phase 5 — adapters and hardening
 
