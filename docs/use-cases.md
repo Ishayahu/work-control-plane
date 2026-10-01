@@ -74,6 +74,47 @@ The scheduler should distinguish work that requires the human from work an AI ca
 
 **Acceptance criterion:** the system does not recommend deep optional research merely because it is engaging when higher-priority obligations are still unmet.
 
+
+## Use case 7 — one learning plan, many subject chats
+
+A long-term learning plan may contain several subjects studied in separate chats or tools: for example logic, music theory, circuit theory, languages, or other topics.
+
+The user should not have to remember:
+
+- which chat contains each subject;
+- where each subject stopped;
+- how far the overall curriculum has progressed;
+- which subjects are ready to continue immediately;
+- which subjects are blocked on a prerequisite;
+- whether a prerequisite is intellectual (read a chapter), logistical (buy a component), or environmental (set up software / equipment).
+
+The control plane should aggregate progress upward from subject-level checkpoints into the broader learning plan.
+
+Example:
+
+```text
+Learning plan
+
+Logic
+  state: ready
+  checkpoint: validity and counterexamples
+  next: continue lesson
+
+Music theory
+  state: ready
+  checkpoint: ...
+  next: ...
+
+Circuit theory
+  state: blocked
+  dependency: buy components for physical experiment
+  after dependency: run experiment and continue
+```
+
+The scheduler should treat "ready to study" and "blocked on preparation" differently. A blocked subject should not occupy working memory, but its prerequisite should appear in the appropriate actionable queue (for example, a shopping/preparation task). Once the prerequisite is resolved, the subject becomes schedulable again.
+
+**Acceptance criterion:** the user can open the learning-plan view and immediately see overall progress, which subjects can be studied now, and what concrete prerequisites are preventing the others from progressing, without remembering the individual chats.
+
 ## MVP acceptance test
 
 The MVP should handle all of these simultaneously:
