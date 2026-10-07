@@ -27,6 +27,9 @@ This roadmap is intentionally small. The project should prove the control model 
 - [ ] Make dashboard items navigable: one tap/click opens the exact project/thread/context.
 - [ ] Add a prominent free-form conversational entry point ("Talk to assistant"), including voice-to-text input.
 - [ ] Keep dashboard controls intentionally sparse; add shortcuts only when they are faster than a conversational command.
+- [ ] On dashboard open, compute a context-aware "best thing to do now" recommendation from calendar availability, readiness, duration, priorities, and scheduling rules.
+- [ ] Show the recommended action plus a small set of alternatives, with one-step navigation into the exact work context.
+- [ ] Keep recommendation separate from execution: opening the dashboard must not silently start arbitrary work.
 
 
 ## Phase 2.5 — acquisition / ingestion
