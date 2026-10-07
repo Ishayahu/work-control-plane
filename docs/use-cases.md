@@ -139,6 +139,37 @@ A prominent "Talk to assistant" control should start a full free-form voice/text
 
 **Acceptance criterion:** routine planning can be performed conversationally, while the dashboard gives immediate visual overview and one-step navigation to the exact work context without duplicating the same management operations as a form-heavy UI.
 
+
+## Use case 9 — opening the dashboard during a free calendar window
+
+The user opens the dashboard without asking a question.
+
+The system can see that the calendar is free for a bounded period before the next commitment. It should treat this as enough context to compute a default recommendation.
+
+Example:
+
+```text
+Free until 15:40 (38 minutes)
+
+Best fit now:
+  Kyrgyz
+  expected: 25–30 min
+  ready
+  [Open]
+
+Also fits:
+  Logic — 20 min
+  Small admin task — 10 min
+```
+
+The recommendation should be derived from the same rules used by the scheduler, not from a separate dashboard-specific heuristic.
+
+Blocked tasks should not be proposed as immediately executable. A task that requires buying equipment, acquiring a source, or resolving another dependency should instead surface its prerequisite when that prerequisite itself fits the current context.
+
+The dashboard should not silently start work merely because it was opened. Opening implies "recommend intelligently", not "execute without confirmation".
+
+**Acceptance criterion:** if the user opens the dashboard during a free calendar interval, the system immediately shows a sensible best-fit next activity and direct entry into it without requiring an extra "what should I do?" request.
+
 ## MVP acceptance test
 
 The MVP should handle all of these simultaneously:
