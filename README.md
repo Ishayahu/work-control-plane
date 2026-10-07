@@ -82,6 +82,9 @@ See [docs/architecture.md](docs/architecture.md).
 8. **Real-world scheduling matters.**  
    Interesting AI work must not automatically outrank paid work, deadlines, sleep, family obligations, or other constraints.
 
+9. **Conversation is the primary control interface; the dashboard is the overview and navigator.**  
+   Free-form voice/text interaction is better for adding tasks, changing plans, asking arbitrary questions, and refining intent. The dashboard should provide an eagle-eye view, quick entry into the right project/thread, and a small number of high-value shortcuts rather than forcing management through forms and buttons.
+
 ## First acceptance test
 
 A useful MVP should be able to represent a situation like this without the user keeping it all in memory:
