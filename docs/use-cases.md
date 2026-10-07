@@ -115,6 +115,30 @@ The scheduler should treat "ready to study" and "blocked on preparation" differe
 
 **Acceptance criterion:** the user can open the learning-plan view and immediately see overall progress, which subjects can be studied now, and what concrete prerequisites are preventing the others from progressing, without remembering the individual chats.
 
+
+## Use case 8 — voice-first planning with dashboard navigation
+
+The user primarily manages tasks and plans through free-form conversation, often by voice.
+
+Typical interactions include:
+
+- "Add this to the plan."
+- "Move this to next week."
+- "What can I work on now?"
+- "Plan next week using my usual rules."
+- "I need to buy something before I can continue circuit theory."
+- arbitrary corrections and exceptions that were not anticipated by the UI designer.
+
+The dashboard should not require the user to translate these requests into forms or manual field edits.
+
+At the same time, conversation alone is poor at persistent situational awareness and navigation. The dashboard should therefore show the current plan and provide direct entry into the relevant work context.
+
+Example: if today's plan says "Kyrgyz", tapping that item should open the exact Kyrgyz learning thread rather than require the user to search through chats.
+
+A prominent "Talk to assistant" control should start a full free-form voice/text interaction. Speech-to-text with editable/transformed text is acceptable and may be preferable to a live voice session.
+
+**Acceptance criterion:** routine planning can be performed conversationally, while the dashboard gives immediate visual overview and one-step navigation to the exact work context without duplicating the same management operations as a form-heavy UI.
+
 ## MVP acceptance test
 
 The MVP should handle all of these simultaneously:
