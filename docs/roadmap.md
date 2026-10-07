@@ -24,6 +24,9 @@ This roadmap is intentionally small. The project should prove the control model 
 - [ ] Show blocked dependencies.
 - [ ] Show resumable work.
 - [ ] Show AI-autonomous work separately.
+- [ ] Make dashboard items navigable: one tap/click opens the exact project/thread/context.
+- [ ] Add a prominent free-form conversational entry point ("Talk to assistant"), including voice-to-text input.
+- [ ] Keep dashboard controls intentionally sparse; add shortcuts only when they are faster than a conversational command.
 
 
 ## Phase 2.5 — acquisition / ingestion
@@ -50,6 +53,7 @@ This roadmap is intentionally small. The project should prove the control model 
 - [ ] Add readiness-aware scheduling: do not offer blocked workstreams as immediately executable.
 - [ ] Surface actionable prerequisites (purchase, setup, source acquisition, prerequisite lesson) as separate preparation tasks.
 - [ ] Add a learning-plan roll-up that aggregates progress/checkpoints across subjects studied in separate chats.
+- [ ] Support conversational planning commands that update the same scheduler/control state used by the dashboard.
 
 ## Phase 5 — adapters and hardening
 
