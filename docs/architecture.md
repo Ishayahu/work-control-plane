@@ -296,6 +296,51 @@ Book project
 
 A shortcut such as "Plan next week using my rules" is useful only if it reduces friction. If speaking the request is easier, the system should not force a dedicated button.
 
+
+### Context-aware landing view
+
+Opening the dashboard is itself a useful interaction signal.
+
+By default, when the user opens the dashboard, the system may infer a lightweight intent:
+
+> "Given my current context, what is the best thing to do now?"
+
+If calendar access and scheduling metadata are available, the dashboard should immediately compute the current actionable window:
+
+- current time;
+- time until the next fixed calendar event;
+- already planned work in that interval;
+- workstream readiness and blockers;
+- expected duration;
+- priority and scheduling rules;
+- whether the task requires human attention or can run autonomously;
+- any other explicit user constraints available to the scheduler.
+
+The landing view should then place a recommendation at the top, for example:
+
+```text
+You have 42 minutes free before the next calendar event.
+
+Recommended now:
+  Kyrgyz — 25–35 min
+  ready; scheduled for today
+  [Open lesson]
+
+Alternatives:
+  Logic — 20 min
+  Review inbox — 10 min
+```
+
+This should not require the user to first ask "What should I do now?"
+
+However, opening the dashboard is only a weak signal of intent, not authorization to start arbitrary work automatically. The default behavior should be **proactive recommendation and navigation**, not silent execution. The user must still be able to open the dashboard purely for overview, browse other projects, or use the conversational command surface.
+
+This creates three layers of interaction:
+
+1. **Proactive suggestion** — the system computes what fits now without being asked.
+2. **Fast navigation** — one tap opens the selected work context.
+3. **Conversation** — the user can override, refine, ask why, or request a different plan in free form.
+
 ### Design implication
 
 The product should avoid becoming a traditional task manager with a dense control surface.
