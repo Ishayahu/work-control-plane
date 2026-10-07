@@ -224,7 +224,86 @@ A workstream may be important and unfinished but still not be executable now bec
 
 These prerequisites should be represented as Dependencies and, when actionable, converted into scheduler-visible preparation tasks. When the dependency is resolved, the original workstream should automatically become eligible for scheduling again.
 
-## 6. Event loop
+
+## 6. Interaction model: conversation first, dashboard second
+
+The dashboard is **not** intended to replace conversational task management.
+
+For many planning and coordination operations, free-form conversation is more efficient than GUI controls because the user can:
+
+- add tasks in natural language;
+- make arbitrary requests;
+- refine or correct them immediately;
+- ask contextual questions;
+- combine several changes in one utterance;
+- express exceptions that would be awkward to encode through forms.
+
+The preferred interaction model is therefore:
+
+```text
+Free-form voice / text conversation
+        |
+        +--> add / change / clarify / plan / query
+        |
+        v
+Control state + sources of truth
+        |
+        v
+Dashboard
+        |
+        +--> eagle-eye overview
+        +--> today's / current priorities
+        +--> project and thread navigation
+        +--> high-value shortcuts
+        +--> immediate "continue" entry points
+```
+
+### Voice-first control
+
+The interface should provide a prominent way to start a full conversational interaction by voice.
+
+This does **not** necessarily imply a real-time voice-call UI. A speech-to-text flow that produces editable text before submission may be preferable because it preserves the advantages of text processing, reviewability, correction, logging, and structured extraction.
+
+The important requirement is low-friction capture: the user should be able to speak a free-form instruction without navigating a task-management form first.
+
+### Dashboard responsibilities
+
+The dashboard's primary jobs are:
+
+1. **Eagle-eye view** — show the current situation across projects, workstreams, blockers, readiness, and priorities.
+2. **Fast navigation** — one click/tap should open the exact project, learning thread, chat, document, or execution context needed now.
+3. **Contextual shortcuts** — expose a small number of actions that are genuinely faster than saying the same thing conversationally.
+
+Example:
+
+```text
+Today
+
+Kyrgyz
+  ready
+  [Open lesson]
+
+Circuit theory
+  blocked: buy experiment components
+  [Open prerequisite]
+
+Book project
+  AI can continue
+  [Continue]
+
+[Talk to assistant]
+```
+
+A shortcut such as "Plan next week using my rules" is useful only if it reduces friction. If speaking the request is easier, the system should not force a dedicated button.
+
+### Design implication
+
+The product should avoid becoming a traditional task manager with a dense control surface.
+
+The conversational interface is the **command surface**.  
+The dashboard is the **situational-awareness and navigation surface**.
+
+## 7. Event loop
 
 The long-term control loop may resemble:
 
@@ -254,7 +333,7 @@ checkpoint + source updates
     +----> repeat
 ```
 
-## 7. Thin-layer principle
+## 8. Thin-layer principle
 
 Before implementing functionality, check whether it already exists in production tools.
 
@@ -272,7 +351,7 @@ Candidates include:
 The control plane should own only the coordination semantics that are otherwise missing.
 
 
-## 8. Acquisition / ingestion layer
+## 9. Acquisition / ingestion layer
 
 A second major source of overhead is **getting material into a form that AI can actually work with**.
 
@@ -320,7 +399,7 @@ A useful engineering heuristic for this project is:
 
 > If an action is repeatedly required only to prepare material for the next intellectual step, and it does not require human judgment, it is a candidate for elimination through automation.
 
-## 9. Open architectural questions
+## 10. Open architectural questions
 
 - Where should control metadata live?
 - How are checkpoints produced and validated?
