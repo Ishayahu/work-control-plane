@@ -56,6 +56,8 @@ The first MVP will likely revolve around:
 
 See [docs/architecture.md](docs/architecture.md).
 
+**Cabinet of Ministers:** [monthly interdepartmental reviews, planning minister, and no-code ChatGPT Work pilot](docs/cabinet-of-ministers.md). This is a P031 workflow, not a separate project or system of record.
+
 ## Design principles
 
 1. **Dashboard != database of reality.**  
