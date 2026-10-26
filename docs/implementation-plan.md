@@ -1,81 +1,85 @@
 # MVP implementation plan
 
-Status: proposed in the planning PR. Functional work is tracked as small GitHub issues and delivered one issue per pull request.
+Status: proposed in PR #1, pending human review. The runnable application does not exist yet. Deliver individual slices through reviewable PRs after the planning PR is approved.
 
-## Decision
+## Working technical decision (2026-10-26)
 
-Start with a single browser application using React, TypeScript, and Vite.
+Start with **Python + server-rendered HTML + HTMX**, as already recorded in `docs/architecture.md` on `main`. A Python web framework (Django / other), templating engine, test runner, and deployment details are **not yet selected**. Do not silently choose a framework by generating a large scaffold; decide when starting the first slice.
 
-For the read-only MVP, data comes from typed fixtures behind adapter interfaces. Do not add a server until a real adapter requires server-side credentials, protected OAuth, or scheduled ingestion. This keeps the first increments visible and avoids designing an API before the projection contract is tested.
+Rationale:
+- The user wants ordinary actions and state changes to update portions of the page without a full reload.
+- The dashboard is primarily a view and navigator; a heavy client application is not currently justified.
+- Running a Python application/server is acceptable. HTMX enhances rendered HTML; it does not replace the backend or an agent executor.
+- Start with fictional fixtures; no real private connectors, external writes, or background agent machinery in the first slice.
 
-Recommended baseline:
+## Development ownership: human-led logic, AI-assisted scaffolding
 
-- React + TypeScript + Vite;
-- Vitest + Testing Library for unit/component tests;
-- Playwright only when the first end-to-end navigation path exists;
-- CSS owned by the application; no component framework in the first issue;
-- runtime validation at external adapter boundaries.
+**Human developer owns** the domain model, architectural choices, business rules, integration semantics, acceptance criteria, and implementation of substantive logic. The assistant may provide explanations, focused code-review, debugging and paired incremental implementation.
+
+**Coding agents may prepare**, only within the assigned issue:
+- a minimal runnable project skeleton and configuration;
+- responsive HTML templates and CSS (and narrowly scoped HTMX attributes);
+- signatures, docstrings, type hints and explicit `NotImplementedError` / safe fixture-backed stubs *where a specific upcoming function has been approved*;
+- mechanical documentation, formatting, non-domain boilerplate, and test harnesses.
+
+**Agents must not** independently invent business rules, implement scheduling/recommendation decisions, connect private data, dispatch agents, or fill stubbed domain logic unless explicitly authorized in that issue. An attractive UI must not claim incomplete functions are working. The user reviews code and approves merging; agents must not merge.
+
+Avoid generating a broad speculative architecture with dozens of empty functions. Build a small working vertical slice, then agree on the next seam. Include short annotations explaining HTMX to a developer who has not used it before.
 
 ## Why not adopt a full product first?
 
-Existing systems cover important lower layers: GitHub Issues and pull requests cover coding work; Google Calendar and task systems own commitments; Linear, Notion, Atlassian and similar products cover project records; AI coding tools execute work. None is assumed to be the canonical cross-system model.
+Existing systems cover lower layers: GitHub Issues/PRs cover coding work; Calendar and task systems own commitments; AI execution tools can perform work. The control plane should remain a thin, replaceable projection and coordination layer. Before any substantial new connector or subsystem, compare a supported existing integration or product against custom code.
 
-The control plane should therefore stay thin: adapters, coordination semantics, projection, recommendation, and navigation. Before each new integration, check whether an existing connector or supported product feature already supplies it.
-
-Official references checked on 2026-10-20:
-
+Prior reuse-first review (2026-10-20) cited:
 - GitHub Issues: https://docs.github.com/issues
+- Google Calendar API: https://developers.google.com/calendar/api
 - Linear agents: https://linear.app/agents
 - Notion AI: https://www.notion.com/product/ai
 - Atlassian Rovo: https://www.atlassian.com/software/rovo
-- Google Calendar API: https://developers.google.com/calendar/api
 
-## Vertical delivery sequence
+These references are historical review inputs, not evidence of an updated compatibility check.
 
-Each slice should produce a visible behavior where practical. If visibility conflicts with keeping the issue reliably small, keep the issue small and let two or three consecutive slices combine into the next visible capability.
+## Vertical delivery sequence (proposed, adjust before each slice)
 
-| Order | Slice | Observable result |
+Each slice should deliver a small, independently understandable outcome. Build **one issue per PR**. Domain-related slices are human-led or require explicit opt-in before delegation.
+
+| Order | Slice | Ownership / observable result |
 |---:|---|---|
-| 1 | Runnable dashboard shell | Responsive grid of static placeholder panels |
-| 2 | Project projection contract and fixture | Project placeholder becomes a rendered project list |
-| 3 | Work-state summary | Counts and groups for ready, blocked, needs-user, autonomous, parked |
-| 4 | Exact-context navigation | Project/thread cards open their configured source links |
-| 5 | Needs-user queue | Short decisions are surfaced independently of whole projects |
-| 6 | Dependency queue | Blocked work shows the missing prerequisite and its next action |
-| 7 | Checkpoint view | A resumable checkpoint and next action can be inspected |
-| 8 | Adapter boundary | Fixture loading goes through a replaceable projection adapter |
-| 9 | Loading/error/stale states | Failure and freshness are explicit rather than silently misleading |
-| 10 | First real read-only adapter | A configured public GitHub source replaces one fixture path |
-| 11 | Conversational entry UI | Text command draft opens from a prominent “Talk to assistant” control |
-| 12 | Voice-to-text enhancement | Supported browsers can dictate and edit the same command draft |
-| 13 | Command gateway contract | Submission uses a configurable gateway with a safe local fake |
-| 14 | Deterministic recommendation engine | Fixtures yield a best-fit action for a supplied time window |
-| 15 | Landing recommendation | Top recommendation and alternatives appear without auto-execution |
-| 16 | Calendar availability adapter | A provided availability projection supplies the current window |
-| 17 | Private deployment/config boundary | Personal configuration is injected outside the public repository |
-| 18 | MVP end-to-end acceptance scenario | All five canonical work states coexist in one tested flow |
+| 1 | Runnable Python dashboard shell | Agent-assisted: responsive page with static fictional panels, manual run instructions, and a small tested HTMX HTML-fragment interaction; no business logic |
+| 2 | First project projection contract and fixture | Human-led Python dataclass/typed domain model; agent may style template and write fixture harness |
+| 3 | Work-state summary and filter | Human defines rules; HTMX updates filtered project list without full reload |
+| 4 | Exact-context navigation | Agent can style safe links; human approves source reference semantics |
+| 5 | Needs-user queue | Human-led domain projection with styled templates |
+| 6 | Dependency queue | Human-led blocker semantics with styled cards |
+| 7 | Checkpoint view | Human-led checkpoint contract, agent-assisted HTML details |
+| 8 | Read-only adapter boundary | Human defines interface and validation; fixture-backed |
+| 9 | Loading/error/stale states | Agent can implement presentation, human defines freshness and retries |
+| 10 | Public GitHub read-only adapter | Human-led integration contract, safe server-side fetch; no private tokens |
+| 11 | Conversational text entry | Agent-assisted accessible template and draft behavior |
+| 12 | Voice-to-text enhancement | Optional browser-side enhancement; only if useful and supported |
+| 13 | Command gateway contract | Human-led contract, safe fake endpoint, no execution |
+| 14 | Deterministic recommendation logic | **Human implements business rules** with tests reviewed together |
+| 15 | Landing recommendation | Agent-assisted templates over approved recommendation result |
+| 16 | Calendar availability projection | Human-led interface, supplied fixture/JSON; no production OAuth |
+| 17 | Public/private config boundary | Agent can prepare sanitized examples; human approves secret handling |
+| 18 | Canonical end-to-end acceptance | Human decides success criteria; tested scenario with fictional data |
 
-## Issue sizing rule
+### HTMX learning contract
 
-An issue should normally change one behavior and one seam. Split it when it requires more than one of the following at once:
+For the first interaction, demonstrate request method and URL (`hx-get`/`hx-post`), `hx-target`, and `hx-swap`, showing the exact Python handler and returned HTML fragment. One new concept at a time; do not assume prior HTMX knowledge. A small action should update the affected area without a full-page navigation. Ensure non-JavaScript fallback where sensible.
 
-- a new external authorization flow;
-- a new persistence model;
-- a new integration;
-- a new user-visible workflow;
-- a broad refactor.
+## Issue sizing and verification
 
-A slice is complete only when its acceptance criteria, automated checks, and review evidence are present.
+- Restrict one PR to one behavior/seam. Avoid mixing a new external authorization flow, new persistence, new integration, and new UI workflow.
+- Accept work only after independently examining the diff, running relevant Python checks/tests, and (for a visible UI) seeing desktop and mobile evidence.
+- Tests for unimplemented domain functions should assert safe, explicitly documented behavior; do not claim that a stub is a finished feature.
+- Track human time, agent time/cost, rework, and actual verified output. A faster agent run alone is not proof of better productivity.
+- For experiments on Mail Bridge, apply the method separately there; do not silently change its workflow based on this dashboard plan.
 
 ## Deliberately deferred
 
-- autonomous dispatch and agent runtime;
-- writes back to external sources;
-- universal task editing;
-- background polling;
-- production authentication;
-- a generalized scheduler;
-- ingestion/transcription pipelines;
-- multi-user support.
+Autonomous dispatch/executor, private integrations, production authentication, full scheduling, automatic dependency resolution, external writes, generalized ingestion and multi-user support. These require independent decisions and explicit authorization.
 
-These remain valid roadmap areas, but building them before the read-only projection proves useful would increase maintenance without validating the core hypothesis.
+## Implementation gate
+
+Do not start issue #2 until PR #1 is reviewed/merged and the first-slice Python web framework is agreed. The MVP scope and stack may be revised after the first functional prototype.
