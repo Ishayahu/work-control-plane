@@ -519,15 +519,16 @@ As of 2026-10-28, `Ishayahu/main-ai/initiatives/REGISTRY.md` explicitly routes *
 
 The shared model is **only the shape of the information returned to logic**, based on the already-agreed recursive Task design: stable source-backed ID, title, optional parent, explicit completion-criterion state (defined / intentionally none / unknown), task status/uncertainty, effective inherited tags and overrides, dependencies, checkpoints and source references. This is **not** a mandate to rewrite all source documents in a common storage format. Resolve the connector from the task's one canonical reference; it knows how to read and apply specifically approved changes to that source's native structure (with conflict detection and explicit read-only restrictions). Other references are supporting context, not alternative write destinations. AI-derived dashboard evaluations never silently override human decisions or authorize external changes. The exact Python fields and read/write method signatures can be refined while implementing a real task example; do not reopen settled model decisions without a concrete reason.
 
-## 16. Open architectural questions
+## 16. Architectural decisions vs implementation work (clarified 2026-10-28)
 
-- Where should control metadata live?
-- How are checkpoints produced and validated?
-- How should thread identity work across vendors?
-- How stale may a projection become before it is misleading?
-- Which changes are event-driven vs polled?
-- How are conflicting updates reconciled?
-- How should permissions and autonomy policies compose?
-- What is the minimal useful scheduler integration?
-- How can the system remain useful when one vendor is unavailable?
-- How should private personal configuration be separated from a public generic core?
+The original twelve cross-cutting architectural questions have been resolved **at the level of architectural principles**, rather than requiring a speculative answer about every implementation detail. Do not keep inventing new architecture-level blockers simply because concrete adapters, screens or worker processes still need to be written.
+
+In particular, the former questions **#10–#12** are classified as follows:
+
+- **#10: Long-running AI execution/recovery — implementation.** An executor/worker can use available agent environments; apply the already-agreed durable checkpoints, authority/irreversibility guardrails and uncertain-outcome reconciliation (§§12–14). Choice of invocation transport, job lifecycle and retry mechanism is implementation work justified by actual use cases, not a prerequisite for revisiting the Task ontology.
+- **#11: Existing planner integration — connector implementation.** The Google Sheets planner remains authoritative for what it owns. Its connector exchanges the task and scheduling data required by the generic logic; source-specific field mapping, queries and writes are determined during implementation. No parallel scheduler database or second planner model is required merely to integrate it.
+- **#12: Conversational command channel — implementation.** Conversation is the main control interface (§6), dashboard is overview/navigation. Commands pass through the same logical action/authorization and canonical-write rules as other controls. Choice of endpoint/protocol/client and parsing UX is implementation.
+
+Other earlier open questions (checkpoint generation and validation, source-specific event delivery, stale views, conflict detection, vendor outage handling, exact fields of a normalized projection, public/private configuration and UI transport) should be specified **just in time** as real vertical slices require them. Relevant architectural invariants have already been recorded in preceding sections: one canonical state source per task, local reconstructible projections, event-triggered reevaluation, default-permit autonomy with explicit protected exceptions, and durable evidence for external irreversible operations.
+
+This is a **closed architecture discussion baseline**, not a claim that the application is implemented, all exceptions are known or the detailed operational design is complete. Reopen an architectural decision only upon finding a concrete contradiction or a use case that the current principles cannot express.
