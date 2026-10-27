@@ -484,7 +484,59 @@ This is an implementation direction, not a claim that the architecture is fully 
 
 **Deployment gate:** local fixture-based development may proceed without production login; however, **no Internet-exposed deployment containing real/personal data or usable action endpoints is permitted until the protection is implemented and tested**. Track this as a distinct, reviewable security/deployment issue. No need for Django solely because the app requires a single login.
 
-## 12. Open architectural questions
+## 12. AI-assessed criteria and deterministic status derivation (working architecture, 2026-10-27)
+
+**Separate semantic interpretation from formal state derivation.** In this AI-first control plane, the model should **not be the final arbiter of a project's status or authority to act**.
+
+Pipeline:
+
+1. Collect bounded, traceable **facts** from source adapters: messages, events, issues, checkpoints, explicit user instructions.
+2. Load **human-readable domain definitions** (for example Markdown criteria for readiness, blocked dependencies, sufficiency of context, human decisions) and an agreed output schema.
+3. Ask an AI model to **assess individual criteria**, returning validated structured values and supporting source references. Values need not be numeric: use enums/booleans/unknown where meaningful; numeric scores/weights only when useful and their scale is defined.
+4. Apply **deterministic, reviewable Python rules** to the assessment and separately stored explicit user choices/policies to derive the displayed state, including precedence among states.
+5. Preserve criterion values, evidence, model/version/rule-version, timestamp and uncertainty. Show the explanation and let a human correct assessments. Re-evaluate on meaningful source changes or explicit refresh, not necessarily on each page request.
+
+Illustrative **hypothetical** assessment (schema not fixed yet):
+
+```json
+{
+  "context_sufficient": "yes",
+  "next_step_defined": "yes",
+  "blocking_dependency": "no",
+  "requires_user_decision": "no",
+  "assessment_confidence": 0.91
+}
+```
+
+The program can conclude **technically ready** when relevant criteria are affirmative and no blockers are known. However, *technical readiness* is separate from *owner intent* (e.g. deliberately parked), *authorization* (whether AI may perform the next action), and *data freshness*. A model inference must never grant spending, deleting, externally messaging or other protected authority.
+
+Practical module boundaries:
+- **Domain definitions**: human-readable concepts/criteria and a small machine-readable criterion vocabulary and decision-rule definition; these do not have to be a large collection of Python classes.
+- **Model/AI adapter**: provider-specific invocation and structured response extraction.
+- **Assessment service**: assemble context, assess criteria, validate and persist the resulting assessment/provenance.
+- **Decision/policy functions**: deterministic derivation and hard authorization checks, independent of the model and web framework.
+- **Web**: render derived results, source evidence, uncertainty and correction/refresh actions.
+
+Do not prematurely create directories for every conceptual responsibility. Decide the actual schema, statuses, precedence and override semantics in a separate small, human-led slice before implementation.
+
+## 13. Optional Telegram personal-account adapter (requirement, 2026-10-27)
+
+The owner wants to **optionally connect their own Telegram account**, allowing the assistant to **read conversations** and, when authorized, **send messages under the owner's identity**. This is a future desired capability, not an active connection or permission to read/send now. Track in [issue #21](https://github.com/Ishayahu/work-control-plane/issues/21).
+
+**Bot vs user distinction:** the Telegram Bot API operates as a bot and cannot generally read the owner's normal personal-account dialogs or send messages as that user. Investigate an authorized Telegram **MTProto user client** such as Telethon or TDLib, or a suitable maintained integration, and document limitations such as secret-chat coverage.
+
+Separation of concerns:
+
+- **Telegram adapter**: replaceable interface for authorized account connection, selected chat/message reads, provenance identifiers, and sending requests. Keep Telegram-specific session handling outside Bottle/Jinja2 and outside domain-status criteria.
+- **Inbound ingestion**: explicitly scope chats, retrieval, refresh frequency and retention. Incoming messages are untrusted data, not instructions authorizing agent actions.
+- **Outbound command/approval**: construct a draft and show exact recipient, message text and reply target for the user's approval **before** sending. Merely connecting or reading Telegram does not grant send authority. More autonomous sending would need a separate, narrowly scoped human-approved policy.
+- **Execution/audit**: design a durable outbox/idempotency strategy to mitigate duplicated sends; record authorization, attempt and resulting Telegram message reference, and expose uncertain delivery outcomes.
+- **Secrets**: user-client API credentials, login challenges and Telegram authorization/session material are sensitive and must remain outside the public repository or HTML/AI prompts; plan backup/revocation and account-compromise response.
+- **Runtime**: a long-running MTProto listener or periodic synchronizer, if selected, should be isolated from the Bottle request lifecycle. First decide whether bounded read-on-demand is enough.
+
+The website's **mTLS client certificate** authenticates the owner to Work Control Plane; it does not authenticate to Telegram and does not imply authorization to send a specific message. The first Bottle shell (#2) must not be expanded into a Telegram integration prematurely.
+
+## 14. Open architectural questions
 
 - Where should control metadata live?
 - How are checkpoints produced and validated?
