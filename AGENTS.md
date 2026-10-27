@@ -47,7 +47,7 @@ Read `README.md`, `docs/architecture.md`, `docs/implementation-plan.md`, and the
 - The real dashboard is **single-user, private-access, Internet-reachable**: no open registration and no multi-user/role-management implementation is required.
 - Local development with fictional fixtures is permitted without production authentication. **Never deploy an unauthenticated app publicly with private data or working action endpoints.**
 - Before Internet exposure, verify HTTPS and an effective login/access gate on *every* route, including HTMX partial endpoints and APIs; prevent bypass to the app listener.
-- Evaluate proxy-layer Basic Authentication as the low-complexity default; do not assume Nginx is installed. Do not invent password storage, session handling or access policy without human approval.
-- No secrets in git, HTML, JS, example screenshots or logs. Only server-side hashed credential verification material in appropriately protected private configuration.
+- Use the current **mTLS client-certificate** access requirement, enforced at the HTTPS reverse proxy, for production. Do not assume Nginx is installed or generate credentials. The human will approve hosting, certificate issuance/renewal/revocation, and client key import. There is no public signup, and unmanaged-device access is not a requirement.
+- No secrets or client private keys in git, HTML, JS, screenshots or logs. Use only approved private server configuration and individual device credentials; a trust/CA certificate may be public.
 - All state-changing operations must use non-GET requests and appropriate CSRF and input validation protections, even behind Basic Authentication.
 - Treat deployment/authentication as a separate reviewable slice; test anonymous rejection and successful authenticated access before reporting it as safe.
