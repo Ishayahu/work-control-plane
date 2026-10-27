@@ -49,133 +49,62 @@ Work Control Plane projection
 
 The control plane may persist coordination metadata, but it should not duplicate domain state unnecessarily.
 
-## 3. Core entities
+## 3. Minimal task-centered logical model (working simplification, 2026-10-27)
 
-### Project
+The earlier `Project / Workstream / Thread` three-tier distinction is being replaced in the **proposed shared Control Plane model** by a single, optionally nested **Task**. The owner has questioned the need for a separate `Project` or `Workstream` type: a large task can be decomposed into child tasks indefinitely. Existing source systems and repository names need not be renamed. References to "project" or "workstream" elsewhere in this document may still describe real-world source organization, not an additional mandatory logical entity.
 
-A durable goal or responsibility.
+### Task
 
-Possible fields:
+A unit of work or intentional activity, large or small, identified by a stable ID and optionally a parent-task reference. A task can have children and can refer to its own canonical external store. **Each task, including a parent task, is completed against its own completion criterion.** Completion of every child task does not automatically complete the parent: assembly, integration, verification or other required outcomes may remain. Conversely, how incomplete child tasks affect evaluation of the parent's criterion depends on that criterion; do not invent a universal rule. A task's durable definition (completion condition, declared dependencies, explicit owner-imposed holds, consequential decisions/checkpoints, etc.) belongs in its canonical source. **Ephemeral operating labels** such as 'awaiting an answer in the current conversation' or 'resumable' may live in a local Control Plane projection/cache and need not be written back on every exchange. Losing the projection calls for a new audit rather than assuming it preserved transient state. Irreversible external-action approvals/operation records retain the separate durable recovery requirements described in §14.
 
-- id
-- name
-- objective
-- priority
-- status
-- source references
-- scheduling policy
+**At creation, explicitly determine the task's completion criterion.** It may be deliberately absent (e.g. learning French purely for enjoyment), but not merely overlooked. When present, express an observable result/condition and use it in completion assessment; when absent, do not assume that an activity will ever enter a terminal completed state.
 
-### Workstream
+Distinguish **purpose** (why the task is valuable or which external goal it serves) from **completion criterion** (how to recognize its finish). A task can have intrinsic enjoyment value without an externally measurable goal. In otherwise comparable circumstances, a task without a defined outcome/external goal may deserve lower *default* scheduling priority than a task explicitly serving an important goal (English for an interview versus French for fun). This is **not** an unconditional priority rule: deadlines, responsibilities, explicit owner priorities and other factors may override it. No numeric weights or inference rules agreed yet.
 
-A coherent branch of work inside a project.
+Routine obligations need not be fabricated as evergreen tasks. For example, do not create "provide IT support" merely as a catch-all if there is no actionable work; create concrete repair/prevention tasks as needed. Do not create a special permanent "project" solely to group these.
 
-Examples:
+### Task tags and categories (agreed minimal requirement, 2026-10-27)
 
-- literature review;
-- implementation;
-- data collection;
-- writing;
-- debugging.
+A task may have **multiple tags** (e.g. `paid`, `unpaid`, `creative`, `translation`, `learning`). The dashboard must support filtering and grouping by tags **independently of the parent/child task hierarchy**. A single task may be both paid and creative; tagging must not force it into one exclusive category.
 
-### Thread
+Initially represent this with a small task `tags` collection; **do not require separate Tag/Category domain entities or a taxonomy-management system** until real usage demonstrates a need. If some tags later describe mutually exclusive values along one dimension (e.g. paid vs unpaid), consider a controlled category/facet and validation at that point, without changing the basic recursive Task model.
 
-A concrete execution context.
+**Inheritance is the default:** a child task's effective tags include the effective tags of its parent (transitively), unless explicitly overridden for that child. Support locally added tags and explicit exclusions of inherited tags; conceptually, `effective_tags(child) = (effective_tags(parent) ∪ added_tags(child)) − excluded_tags(child)`. Do **not** materialize inherited tags as independent local assignments by default, so a parent update propagates while a child's explicit exclusion remains effective. The override mechanism must work for multiple levels of nesting. Do not infer `unpaid` merely from absence of `paid`, and do not implicitly let mutually exclusive labels coexist: resolving controlled/exclusive tag dimensions remains a later schema decision. Whether tags directly affect priority is not yet decided.
 
-Examples:
+### Reference
 
-- a ChatGPT conversation;
-- a coding-agent session;
-- a research run;
-- a GitHub issue;
-- a document-writing session.
-
-A thread is important because one project may have several simultaneous conversations or agents.
-
-### Checkpoint
-
-A compact resumable state.
-
-A checkpoint should answer:
-
-- what has been completed;
-- what is currently believed / decided;
-- what artifacts or sources changed;
-- what remains open;
-- what next action is recommended;
-- whether human input is required.
-
-The checkpoint is a handoff protocol between sessions.
-
-### Next Action
-
-The next meaningful unit of work, not merely the next UI click.
+An identifier/link to the real source, including GitHub issue/repository/path, document, Google Sheet range, chat or agent session. The older `Thread` concept is normally just a **Reference**, not an independently managed entity. A task may have multiple references; references retain source provenance.
 
 ### Dependency
 
-A condition that prevents continuation.
+A directed dependency from a task onto another task or a condition (e.g. awaiting a reply, document or decision). The dependency is a relation, not necessarily a free-standing object with a separate life cycle. Distinguish unconfirmed/unknown conditions.
 
-Examples:
+### Other aspects are data, not mandatory core entities
 
-- missing document;
-- awaited reply;
-- unavailable credential;
-- unresolved architectural decision;
-- calendar event.
+- **Checkpoint**: resumable state, decisions, changed artifacts, outstanding questions and next action.
+- **Needs user**: assessed/derived criterion describing required human input, work or approval.
+- **Autonomy policy**: separately enforced permission rules, not an AI-inferred grant.
+- **Scheduling metadata**: deadlines, duration, effort/attention, urgency and priority criteria.
+- **Source of truth**: task-owned reference to canonical storage; no compulsory shared physical file format.
+- **AI assessment**: individual criterion values, evidence, timestamps and assessment version.
 
-### Needs User
+This is a conceptual model for discussion; physical Python classes, field constraints, relationship cardinality, completion behavior of parent tasks and source adapters should be decided through small real use cases rather than created wholesale now.
 
-A first-class distinction.
+## 4. Work state: durable facts, computed blocks and transient dialogue state (revised, 2026-10-28)
 
-Suggested states:
+**Do not maintain a manually updated persisted status enum for every conversation turn.** For ordinary unfinished work, **resumable / available for continuation** is the default after a source refresh, subject to verified dependencies and explicit holds. A status displayed on the dashboard is primarily a **projection**, not independent project-owned data.
 
-- `no` — AI may continue;
-- `short_input` — a small choice or answer is needed;
-- `deep_work` — joint reasoning is required;
-- `approval` — action is ready but requires authorization.
+Three separate mechanisms:
 
-### Autonomy Policy
+1. **Computed dependency blocker.** Declared task-to-task dependencies live in the canonical task source; program logic checks their present satisfaction. If a dependency is unfinished or unverified, show the appropriate blocked/unknown condition without writing a second 'blocked' status to the dependent task.
+2. **Durable explicit hold.** If the owner explicitly says 'do not continue until X happens' (e.g. awaiting a response/permission from someone else, not readily expressible as an existing task dependency), save this block with its **reason and release condition** in the task's canonical source. Do not lose it when the Control Plane host is reset. The condition may be checked on later reviews, with the owner’s instruction remaining authoritative.
+3. **Transient conversation state.** A question asked to the owner, an outstanding answer in the current conversation, a temporarily suspended session or available/resumable work can be tracked in the local dashboard database/cache. A response updates local state; do not commit to GitHub for each question/answer. The owner accepts that after loss of local state the system re-audits the task instead of recovering all transient dialog markers.
 
-Defines actions the AI may take without asking.
+**Event-driven re-evaluation is the default and sole routine trigger** (agreed 2026-10-28): a new user instruction, task-state change, completion of a prerequisite, provider message, relevant source update or due scheduled threshold triggers re-evaluation of **only affected tasks and their dependents**. Do **not** periodically re-read/re-assess every task or re-assess merely because someone opened the dashboard. A clock crossing a deadline can be modeled as an internally scheduled event; this does not require polling all tasks. An event is reason to *check* a task, not proof that its status has changed.
 
-Example:
+An optional cross-task **event inbox/index** in the dashboard correlates observed events with waiting conditions. This is **not a second canonical task registry**. The fact that an event occurred does not guarantee the dashboard *observed* it. Connectors should use change notifications or incremental sync where supported; if a provider offers no push mechanism, polling **that event source for new changes** is compatible with event-driven task assessment. After a restart or detected gap, initialize/replay from source state or a remembered cursor as possible, and run a **one-time recovery audit** where completeness cannot be established; this is not a periodic all-task scan. Where a one-off external event cannot be replayed, a purely volatile event log may miss it; address the concrete durability requirement when encountered instead of mandating a universal event store. Event receipt alone does not grant authority to resume a previously forbidden or side-effecting operation.
 
-```yaml
-autonomy:
-  research: true
-  draft: true
-  edit_project_files: true
-  create_new_external_resources: ask
-  delete_data: ask
-  spend_money: never
-  external_communication: ask
-```
-
-### Source of Truth
-
-Pointers, not copies.
-
-Examples:
-
-- Git repository/path;
-- Google Sheet ID/range;
-- document URL;
-- issue ID;
-- database record;
-- agent/chat/thread reference.
-
-## 4. Work states
-
-A dashboard should distinguish at least:
-
-- **Ready / resumable** — can continue now.
-- **AI can continue** — no user involvement needed.
-- **Needs short input** — a small decision blocks progress.
-- **Needs deep work** — human reasoning time is required.
-- **Blocked externally** — waiting for a dependency.
-- **Parked** — intentionally paused.
-- **Complete** — no open loop.
-
-This is more useful than a single generic "in progress" state.
+Completion of a parent task still depends **only on its own completion criterion**, not automatically on all children being completed. Distinguish 'no evidence of a blocker' from 'permission to execute'; approval policy and external-action safety gates are enforced separately. AI interpretation can assist only when unstructured source material is ambiguous; it is not needed for mechanically checking known dependencies or explicit owner instructions.
 
 ## 5. Scheduler integration
 
@@ -350,33 +279,33 @@ The dashboard is the **situational-awareness and navigation surface**.
 
 ## 7. Event loop
 
-The long-term control loop may resemble:
+**Evaluate on observed events, not on an arbitrary periodic scan**. A connector or a scheduled deadline event is a source of signals; the logic routes each signal to the affected tasks and their dependency graph. Unrelated tasks are left alone.
 
 ```text
-state changes
+observed event (user / connector / dependency / scheduled threshold)
     |
     v
-refresh project projection
+event index -> resolve affected task IDs
     |
     v
-classify open loops
-    |
-    +--> autonomous -> dispatch agent
-    |
-    +--> blocked -> track dependency
-    |
-    +--> needs user -> surface decision
-    |
-    +--> schedulable -> planner chooses slot
+refresh only affected canonical data / transient cache
     |
     v
-execution
+recompute dependent task states deterministically
+    |
+    +--> completed -> reflect task's own criterion
+    +--> explicit hold -> retain release condition
+    +--> blocked on dependency -> await change event
+    +--> needs user -> surface question
+    +--> otherwise -> resumable
     |
     v
-checkpoint + source updates
-    |
-    +----> repeat
+update dashboard projection; optional separately authorized work
 ```
+
+Event discovery and event-driven task evaluation are distinct: a provider may need incremental polling to discover changes, without periodic evaluation of the entire task inventory. On cold start, build the initial projection; after a disconnected period, catch up from connector cursors or perform a bounded recovery audit if completeness is unknown. Source events do not themselves authorize external actions or imply automatic dispatch.
+
+**Time-based triggers (agreed 2026-10-28): use the operating system's `cron` rather than building a separate Control Plane timing engine.** Cron jobs may either (a) emit a specific task-related event for selective state re-evaluation, or (b) directly start an approved operation such as sending a scheduled email or preparing a report. Use a small command/handler entry point; do not require all scheduled actions to pass through a redundant internal event queue. For outbound side effects, the operation must have prior explicit authorization or a narrowly scoped standing policy; cron timing does not grant permission. Preserve operation IDs/receipts and uncertain-outcome recovery safeguards from §14, to avoid accidental duplicates on reruns. Exact one-off registration/cancellation and provider-specific scheduling mechanics can be chosen when implemented; no need for blanket periodic task scans.
 
 ## 8. Thin-layer principle
 
@@ -446,7 +375,7 @@ A useful engineering heuristic for this project is:
 
 ## 10. MVP implementation stack (working decision, 2026-10-26)
 
-**Provisional choice:** Python backend with server-rendered HTML and HTMX for modest interactivity. This reflects current MVP expectations, not an irreversible framework commitment. The specific Python web framework remains undecided.
+**Provisional choice:** Python backend with server-rendered HTML and HTMX for modest interactivity. **Initial trial:** Bottle for HTTP/routing with portable Jinja2 templates and HTMX HTML-fragment updates. This is a reversible first experiment, not a commitment to Bottle for the full product; possible trials of Pyramid or other frameworks remain open.
 
 Why:
 
@@ -465,15 +394,141 @@ Development approach:
 
 This is an implementation direction, not a claim that the architecture is fully decided.
 
-## 11. Open architectural questions
+## 11. Single-user authentication and public deployment requirement (2026-10-27)
 
-- Where should control metadata live?
-- How are checkpoints produced and validated?
-- How should thread identity work across vendors?
-- How stale may a projection become before it is misleading?
-- Which changes are event-driven vs polled?
-- How are conflicting updates reconciled?
-- How should permissions and autonomy policies compose?
-- What is the minimal useful scheduler integration?
-- How can the system remain useful when one vendor is unavailable?
-- How should private personal configuration be separated from a public generic core?
+**Mandatory product constraint:** The real dashboard will be reachable over the Internet, but access must be limited to its single owner. No public signup, self-service registration, social login, invitation flow, user directory, or role-management UI is required for the MVP. A public GitHub source repository does **not** imply a public dashboard.
+
+### Proposed minimum, subject to host/proxy review
+
+**Current access choice: mTLS using individual client certificates and private keys on the owner's controlled devices, preferably enforced at the HTTPS reverse proxy (e.g., Nginx if actually used).** The hosting/proxy is not yet verified. The user does not require access from unmanaged devices. This choice avoids adding a username/password login flow to Bottle, but the issuance and revocation system still needs to be designed.
+
+- Require HTTPS on every public request. HTTP must not expose private content or accept credentials.
+- Protect **all** HTML, HTMX endpoints, API routes, static assets containing private information, and command paths; default-deny, with no unintended unauthenticated bypass.
+- Keep the Python process bound to loopback/private network where applicable so clients cannot bypass the proxy.
+- Keep client **private keys** protected and out of source control, HTML, JS and logs. A client certificate without the matching private key cannot authenticate. Issue separate certificates per device when practical; define import, backup, expiration/renewal and revocation processes. Client and server TLS certificates serve different purposes.
+- Reject missing, invalid, expired and revoked client certificates using an appropriate trust/revocation policy; monitor failed access attempts. Never treat concealment of a URL as authentication.
+- Avoid state-changing `GET` routes. **Authenticated state-changing commands still need CSRF protection** (anti-CSRF token and/or verified origin with appropriate defense in depth), input validation, and explicit authorization boundaries.
+- HTMX same-origin requests must remain authenticated. Tests must cover both full-page navigation and HTMX fragment/action endpoints.
+- mTLS is device-key possession authentication, not a per-action approval mechanism. If a later requirement demands access from unmanaged devices or a distinct login/logout flow, reconsider a managed access gateway or server-side session solution rather than quietly weakening the chosen policy.
+
+**Deployment gate:** local fixture-based development may proceed without production login; however, **no Internet-exposed deployment containing real/personal data or usable action endpoints is permitted until the protection is implemented and tested**. Track this as a distinct, reviewable security/deployment issue. No need for Django solely because the app requires a single login.
+
+## 12. State interpretation: deterministic by default, AI only where needed (revised, 2026-10-28)
+
+The owner rejected introducing an additional universal AI rubric for readiness when the relevant facts are already explicitly known. **Completion criteria are defined on Task creation**; no duplicate set of 'completion criteria' is needed. State derivation starts from:
+
+- the task's own completion criterion and confirmed completion facts;
+- explicit dependencies and their checked satisfaction;
+- durable, explicitly imposed holds with reasons and release conditions in the canonical source;
+- transient outstanding human questions and dialogue progress from the local Control Plane projection;
+- independent authorizations and external action safety policy.
+
+Ordinary unfinished work defaults to **resumable**, unless verified dependency status or an explicit hold prevents continuation. When local state is lost, re-read the canonical task source and dependencies and perform a fresh audit. The assistant may need to ask a question again; it must **not** infer a fresh permission to perform irreversible actions from a cleared cache.
+
+### Default-permit autonomy with irreversible-action guardrail (agreed 2026-10-28)
+
+**Within a requested/assigned task and the executor's actual available capabilities, actions are permitted by default unless a rule explicitly prohibits them.** Do not require owner confirmation for each ordinary reversible intermediate step (reading, research, drafting, editing files, committing to a working branch, computing and checking results, etc.). **Permission to perform an action is not the same as a trigger to initiate arbitrary unrelated work:** merely opening the dashboard is not a command to launch tasks.
+
+Require the owner's explicit confirmation **before any irreversible action or one with practically irreversible consequences**, unless a prior explicit, durable and applicable exception authorizes that specific action or class of actions. In particular, independently protect the following categories even when a narrowly technical undo might exist:
+
+- deleting data or resources;
+- communicating with living people on the owner's behalf (sending messages, letters, calls or other outbound contact);
+- spending or committing money;
+- any other action that is impossible to reverse in practice, including disclosure/publication that cannot reliably be withdrawn.
+
+**Permanent/standing exceptions** can later be recorded as explicit permissions for specified operations or narrowly described classes (with scope/constraints where relevant, e.g. recipient, amount, context, time). Do not infer them from past approvals, available credentials, task readiness, or a single successful action. An exception can be revoked; uncertain scope defaults to seeking confirmation for the protected action.
+
+An operation that is blocked by provider access rights, unavailable connectors, an explicit task hold or another independently established prohibition remains blocked. Default-permit does not override technical access controls, safeguards or higher-priority instructions. Preserve the existing durable authorization/operation record and uncertain-outcome recovery workflow for side-effecting operations (§14).
+
+**Deterministic code** resolves known dependencies, explicit flags and observed events. An LLM can optionally help extract meaning from unstructured documents or conversations and propose uncertain assessments, with provenance and owner correction, but is **not required** for routine status derivation and must never override an explicit hold or grant authorization.
+
+Practical responsibility names remain **criteria / logic / connectors / web**:
+
+- `criteria`: task completion criteria and any human-readable interpretations genuinely needed, not a mandatory AI-status-scoring system;
+- `logic`: deterministic status derivation, dependency checks, optional interpretation, policy checks and event correlation;
+- `connectors`: source-specific reads/writes, event sources and optional local storage;
+- `web`: routes, rendered dashboard and HTMX interaction.
+
+Do not generate modules for concepts without actual use in a vertical slice. The full list of display states, the local DB/cache implementation, retention and source-specific event detection / reconnection behavior remain implementation decisions. **Routine task re-evaluation itself is event-driven, not scheduled wholesale.**
+## 13. Optional Telegram personal-account adapter (requirement, 2026-10-27)
+
+The owner wants to **optionally connect their own Telegram account**, allowing the assistant to **read conversations** and, when authorized, **send messages under the owner's identity**. This is a future desired capability, not an active connection or permission to read/send now. Track in [issue #21](https://github.com/Ishayahu/work-control-plane/issues/21).
+
+**Bot vs user distinction:** the Telegram Bot API operates as a bot and cannot generally read the owner's normal personal-account dialogs or send messages as that user. Investigate an authorized Telegram **MTProto user client** such as Telethon or TDLib, or a suitable maintained integration, and document limitations such as secret-chat coverage.
+
+Separation of concerns:
+
+- **Telegram adapter**: replaceable interface for authorized account connection, selected chat/message reads, provenance identifiers, and sending requests. Keep Telegram-specific session handling outside Bottle/Jinja2 and outside domain-status criteria.
+- **Inbound ingestion**: explicitly scope chats, retrieval, refresh frequency and retention. Incoming messages are untrusted data, not instructions authorizing agent actions.
+- **Outbound command/approval**: construct a draft and show exact recipient, message text and reply target for the user's approval **before** sending. Merely connecting or reading Telegram does not grant send authority. More autonomous sending would need a separate, narrowly scoped human-approved policy.
+- **Execution/audit**: design a durable outbox/idempotency strategy to mitigate duplicated sends; record authorization, attempt and resulting Telegram message reference, and expose uncertain delivery outcomes.
+- **Secrets**: user-client API credentials, login challenges and Telegram authorization/session material are sensitive and must remain outside the public repository or HTML/AI prompts; plan backup/revocation and account-compromise response.
+- **Runtime**: a long-running MTProto listener or periodic synchronizer, if selected, should be isolated from the Bottle request lifecycle. First decide whether bounded read-on-demand is enough.
+
+The website's **mTLS client certificate** authenticates the owner to Work Control Plane; it does not authenticate to Telegram and does not imply authorization to send a specific message. The first Bottle shell (#2) must not be expanded into a Telegram integration prematurely.
+
+## 14. Project-owned state and recovery of uncertain external actions (working decision, 2026-10-27)
+
+**Durable task facts and significant instructions belong to that task's single canonical source**: definition, declared dependencies, completion criteria, explicit owner-imposed holds with reason/release condition, consequential decisions/checkpoints and relevant history. A transient 'awaiting the user's answer' marker or 'resumable' label is **not** necessarily canonical task state. Local dashboard storage can retain such markers, recent assessments/events and caches and may be lost; its loss triggers re-evaluation. Do not update a GitHub repository merely because the assistant asked a routine question or received an answer. Existing learning projects already have GitHub context; do not create companion stores for them without reason. No mandatory SQLite/PostgreSQL requirement is imposed solely by this conceptual decision. **The distinct durable operation records below are still required for recovery of side-effecting external actions.**
+
+For an external action that might have side effects (e.g. sending a Telegram message), use a small **project-owned durable operation record** when recovery matters:
+
+1. Record the exact instruction and authorization, target, parameters, and unique operation identifier **before** attempting it (`pending` or equivalent).
+2. Execute through the appropriate connector.
+3. On confirmed provider success, record the external result reference and mark `completed`; don't confuse an HTTP/UI reply with provider confirmation.
+4. After a crash or lost response, a record that lacks `completed` means **outcome unknown**, not automatically `failed` or `not executed`.
+5. Query the provider, where possible, for evidence that the operation occurred. Confirm `completed` if reliably identified; if not observed, present 'apparently not completed' with evidence/limits; if ambiguity remains, explicitly mark it **uncertain**.
+6. **Do not silently retry irreversible/external actions.** Ask the owner to verify or approve a retry. Provider-level deduplication/idempotency may reduce risk where supported but cannot be assumed.
+
+The user-facing wording should distinguish: `confirmed_completed`, `apparently_not_completed`, `outcome_unknown`. Absence of a matching outgoing Telegram message is not necessarily proof of non-delivery (history may be incomplete/deleted; identical messages may be ambiguous). Avoid inventing a guarantee of exactly-once delivery.
+
+Retain operation approvals and the relevant audit history with the corresponding project (or its project-owned companion store) if durable recovery is required. If a particular external action truly cannot be recovered without separate infrastructure, demonstrate that failure case before introducing a central mandatory operation database. **Loss of the Control Plane host should not erase canonical project decisions or automatically cause repeated sends.**
+
+## 15. Connector contract: common logical model, native project storage (agreed, 2026-10-27)
+
+**A single normalized interface, not a mandated universal physical file format.** Each project preserves its own canonical data representation (e.g. GitHub Markdown/issues, Google Drive documents, Sheets, or another native store). A source-specific connector translates the project's fields and evidence into the shared in-memory structures consumed by Control Plane logic. No requirement to retrofit every existing project with a common JSON/YAML file.
+
+- **Read:** discover/resolve project source references and project-scoped work state, normalize the subset needed by logic, and preserve source identifiers, timestamps/provenance and unknown/missing values.
+- **Write:** when a change has been explicitly approved and the target source is writable, map the requested change back into that project's native representation. Do not silently modify a different source or assume every connector supports writing. Handle version/conflict checks appropriate to each source.
+- **Capabilities:** connectors may be read-only or provide a limited range of mutations; surface unsupported operations explicitly.
+- **No loss of source-specific detail:** normalized views are deliberately partial; do not rewrite or discard fields the shared model does not understand.
+- **Project-local authority:** durable task definitions, explicit holds, consequential decisions and essential checkpoints/history remain at the canonical task location. Operational conversation flags and derived statuses may be cached in Control Plane and reconstructed or re-audited as needed; no unnecessary status write-back after each exchange.
+- **Architecture boundary:** generic logic consumes a stable application-facing contract, without hardcoding GitHub/Sheets data formats. The contract should emerge from real vertical slices rather than speculative interfaces.
+
+### Discovery via the existing context router (working decision, 2026-10-27)
+
+Use the already-existing **`Ishayahu/main-ai`** context repository as the discovery/navigation root instead of creating another canonical task/project list in Work Control Plane:
+
+- `INDEX.md` routes natural-language intents to relevant context; it is not automatically a complete machine-readable list of individual tasks.
+- `initiatives/REGISTRY.md` lists registered initiatives and pointers; `links/SOURCES.md` and linked cards may resolve additional canonical systems. Do not read dated snapshot statuses in `projects/Pnnn.md` as current truth.
+- Registered top-level work can use its existing identifier (e.g. `P031`, `central-asia`) with an appropriate namespace when uniqueness requires one. Load concrete child tasks from their canonical sources (e.g. Google Sheets, GitHub Issues); don't replicate every leaf in the router.
+- **One logical task has exactly one canonical state owner at a time.** The record pointed to by the router is authoritative for task status, completion criterion, progress, blockers, checkpoints and task metadata. A task may include references to chats, documents, code or calendar entries, but these are supporting sources/artifacts, **not parallel copies of the task state**.
+- The canonical source reference itself normally determines the connector (for example, GitHub or Google Sheets); do not duplicate a provider selector as mandatory task metadata. Resolve the source using a registered connector, and report unsupported or ambiguous link types explicitly.
+- The in-memory Control Plane projection may cache task records, but such caches are disposable/reconstructible. Avoid bidirectional status synchronization and duplicate authoritative records.
+- Before applying this design in code, check that the existing registry covers the root activities needed for the dashboard; don't presume it is exhaustive or machine-readable without adaptation.
+
+### Existing records and canonical routing: no migration or deletion requirement (corrected, 2026-10-28)
+
+The dashboard should **not require moving, deleting, reconciling or synchronizing** legacy copies of task records. The existing Google Sheets planner and all `main-ai` content remain **unchanged** during architecture work, and do not need to be cleaned up when the dashboard is introduced. A future explicit, separately authorized cleanup is optional, not a prerequisite.
+
+For each registered root Task, the context registry should ultimately resolve to **one designated canonical state location** (e.g. `Ishayahu/work-control-plane` for P031), not one link *total*: incidental links to related artifacts may remain. A valid state change goes **only to that canonical location** through its connector. Any older state copies in Sheets or elsewhere are out of scope and are not consulted to reconcile the canonical status. The task source link tells the system which connector to use; duplicate provider selectors are unnecessary.
+
+As of 2026-10-28, `Ishayahu/main-ai/initiatives/REGISTRY.md` explicitly routes **P031** to `Ishayahu/work-control-plane` (`task.yaml`), **P032** to `Ishayahu/book-of-control` (`task.yaml`), and **P021** to the existing Google Sheets planner. These three entries now each expose one canonical-source link; corresponding historical card files and original Sheets entries remain unchanged. The `main-ai` index, snapshot README and source navigation were updated to reflect the exceptions. Other legacy registry rows may still contain multiple navigational links, so treat their ownership resolution as an independent later task; do not automatically infer or migrate it. Data was copied into the two GitHub `task.yaml` files with source provenance and old planner milestones marked historical, without altering Google Sheets.
+
+### Normalized read/write contract (to define with concrete examples)
+
+The shared model is **only the shape of the information returned to logic**, based on the already-agreed recursive Task design: stable source-backed ID, title, optional parent, explicit completion-criterion state (defined / intentionally none / unknown), task status/uncertainty, effective inherited tags and overrides, dependencies, checkpoints and source references. This is **not** a mandate to rewrite all source documents in a common storage format. Resolve the connector from the task's one canonical reference; it knows how to read and apply specifically approved changes to that source's native structure (with conflict detection and explicit read-only restrictions). Other references are supporting context, not alternative write destinations. AI-derived dashboard evaluations never silently override human decisions or authorize external changes. The exact Python fields and read/write method signatures can be refined while implementing a real task example; do not reopen settled model decisions without a concrete reason.
+
+## 16. Architectural decisions vs implementation work (clarified 2026-10-28)
+
+The original twelve cross-cutting architectural questions have been resolved **at the level of architectural principles**, rather than requiring a speculative answer about every implementation detail. Do not keep inventing new architecture-level blockers simply because concrete adapters, screens or worker processes still need to be written.
+
+In particular, the former questions **#10–#12** are classified as follows:
+
+- **#10: Long-running AI execution/recovery — implementation.** An executor/worker can use available agent environments; apply the already-agreed durable checkpoints, authority/irreversibility guardrails and uncertain-outcome reconciliation (§§12–14). Choice of invocation transport, job lifecycle and retry mechanism is implementation work justified by actual use cases, not a prerequisite for revisiting the Task ontology.
+- **#11: Existing planner integration — connector implementation.** The Google Sheets planner remains authoritative for what it owns. Its connector exchanges the task and scheduling data required by the generic logic; source-specific field mapping, queries and writes are determined during implementation. No parallel scheduler database or second planner model is required merely to integrate it.
+- **#12: Conversational command channel — implementation.** Conversation is the main control interface (§6), dashboard is overview/navigation. Commands pass through the same logical action/authorization and canonical-write rules as other controls. Choice of endpoint/protocol/client and parsing UX is implementation.
+
+Other earlier open questions (checkpoint generation and validation, source-specific event delivery, stale views, conflict detection, vendor outage handling, exact fields of a normalized projection, public/private configuration and UI transport) should be specified **just in time** as real vertical slices require them. Relevant architectural invariants have already been recorded in preceding sections: one canonical state source per task, local reconstructible projections, event-triggered reevaluation, default-permit autonomy with explicit protected exceptions, and durable evidence for external irreversible operations.
+
+This is a **closed architecture discussion baseline**, not a claim that the application is implemented, all exceptions are known or the detailed operational design is complete. Reopen an architectural decision only upon finding a concrete contradiction or a use case that the current principles cannot express.
