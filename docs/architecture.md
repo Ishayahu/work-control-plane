@@ -425,6 +425,21 @@ The owner rejected introducing an additional universal AI rubric for readiness w
 
 Ordinary unfinished work defaults to **resumable**, unless verified dependency status or an explicit hold prevents continuation. When local state is lost, re-read the canonical task source and dependencies and perform a fresh audit. The assistant may need to ask a question again; it must **not** infer a fresh permission to perform irreversible actions from a cleared cache.
 
+### Default-permit autonomy with irreversible-action guardrail (agreed 2026-10-28)
+
+**Within a requested/assigned task and the executor's actual available capabilities, actions are permitted by default unless a rule explicitly prohibits them.** Do not require owner confirmation for each ordinary reversible intermediate step (reading, research, drafting, editing files, committing to a working branch, computing and checking results, etc.). **Permission to perform an action is not the same as a trigger to initiate arbitrary unrelated work:** merely opening the dashboard is not a command to launch tasks.
+
+Require the owner's explicit confirmation **before any irreversible action or one with practically irreversible consequences**, unless a prior explicit, durable and applicable exception authorizes that specific action or class of actions. In particular, independently protect the following categories even when a narrowly technical undo might exist:
+
+- deleting data or resources;
+- communicating with living people on the owner's behalf (sending messages, letters, calls or other outbound contact);
+- spending or committing money;
+- any other action that is impossible to reverse in practice, including disclosure/publication that cannot reliably be withdrawn.
+
+**Permanent/standing exceptions** can later be recorded as explicit permissions for specified operations or narrowly described classes (with scope/constraints where relevant, e.g. recipient, amount, context, time). Do not infer them from past approvals, available credentials, task readiness, or a single successful action. An exception can be revoked; uncertain scope defaults to seeking confirmation for the protected action.
+
+An operation that is blocked by provider access rights, unavailable connectors, an explicit task hold or another independently established prohibition remains blocked. Default-permit does not override technical access controls, safeguards or higher-priority instructions. Preserve the existing durable authorization/operation record and uncertain-outcome recovery workflow for side-effecting operations (§14).
+
 **Deterministic code** resolves known dependencies, explicit flags and observed events. An LLM can optionally help extract meaning from unstructured documents or conversations and propose uncertain assessments, with provenance and owner correction, but is **not required** for routine status derivation and must never override an explicit hold or grant authorization.
 
 Practical responsibility names remain **criteria / logic / connectors / web**:
