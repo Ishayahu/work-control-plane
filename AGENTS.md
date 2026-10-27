@@ -20,6 +20,13 @@ Read `README.md`, `docs/architecture.md`, `docs/implementation-plan.md`, and the
 - Explain the relevant `hx-*` attributes and server fragment contract when introducing HTMX; the human developer is new to HTMX.
 - For features requiring real implementation choices, pause at the defined boundary instead of inventing business rules.
 
+## Naming and responsibility boundaries
+
+- Name the application's conceptual components **criteria, logic, connectors, web** rather than assuming generic `domain/services/adapters` folders.
+- `criteria`: human-readable AI evaluation definitions; `logic`: model assessment orchestration, deterministic status derivation and policy checks; `connectors`: external providers and persistence; `web`: Bottle + Jinja2 + HTMX request/view layer.
+- Technical configuration and credentials are *not* criteria; keep them separate and private.
+- These are responsibilities, not a mandate to generate unused directories in the first PR.
+
 ## Technical baseline
 
 - Provisional MVP stack: **Python, server-rendered HTML, HTMX, CSS**.
