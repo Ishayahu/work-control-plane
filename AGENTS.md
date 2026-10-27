@@ -24,7 +24,10 @@ Read `README.md`, `docs/architecture.md`, `docs/implementation-plan.md`, and the
 
 - Provisional MVP stack: **Python, server-rendered HTML, HTMX, CSS**.
 - Do not use React, TypeScript, Vite or introduce a client SPA unless the human later revises the decision.
-- Python web framework, template tooling, and tests remain undecided until the first implementation slice.
+- Working first-slice stack: **Bottle + Jinja2 + HTMX** (pytest candidate). No alternate framework or Bottle-only template syntax without explicit human approval.
+- Jinja2 produces server-rendered HTML and HTMX swaps fragments; keep them distinct and document the request/response contract.
+- Keep domain logic independent of web framework request objects; confine Bottle-specific glue to a thin web layer so Pyramid/Flask can be evaluated later if needed.
+- Do not preemptively migrate or generate code for multiple frameworks. A framework trial must have a specific motivation, comparable functionality and tests, and human approval.
 - Dynamic UI updates should replace a targeted HTML fragment without a full page reload. HTMX is UI plumbing, not the agent executor.
 - Preserve keyboard accessibility and useful ordinary HTML semantics. Avoid unnecessary JavaScript.
 - Keep domain logic independent from route handlers/templates, and source adapters independent from domain state.
