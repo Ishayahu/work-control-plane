@@ -100,7 +100,9 @@ Three separate mechanisms:
 2. **Durable explicit hold.** If the owner explicitly says 'do not continue until X happens' (e.g. awaiting a response/permission from someone else, not readily expressible as an existing task dependency), save this block with its **reason and release condition** in the task's canonical source. Do not lose it when the Control Plane host is reset. The condition may be checked on later reviews, with the owner’s instruction remaining authoritative.
 3. **Transient conversation state.** A question asked to the owner, an outstanding answer in the current conversation, a temporarily suspended session or available/resumable work can be tracked in the local dashboard database/cache. A response updates local state; do not commit to GitHub for each question/answer. The owner accepts that after loss of local state the system re-audits the task instead of recovering all transient dialog markers.
 
-Optional cross-task **event inbox/index** in the dashboard may correlate observed events (e.g. an external reply or a confirmed completed task) with recorded waiting conditions and schedule a recheck. This is **not a second canonical task registry**. Polling/re-reading providers can recover replayable events after a cache loss. Where a one-off external event cannot be replayed, a purely volatile event log may miss it; solve that concrete durability case when encountered, rather than prematurely mandating a universal event store. Event receipt alone does not grant authority to resume a previously forbidden or side-effecting operation.
+**Event-driven re-evaluation is the default and sole routine trigger** (agreed 2026-10-28): a new user instruction, task-state change, completion of a prerequisite, provider message, relevant source update or due scheduled threshold triggers re-evaluation of **only affected tasks and their dependents**. Do **not** periodically re-read/re-assess every task or re-assess merely because someone opened the dashboard. A clock crossing a deadline can be modeled as an internally scheduled event; this does not require polling all tasks. An event is reason to *check* a task, not proof that its status has changed.
+
+An optional cross-task **event inbox/index** in the dashboard correlates observed events with waiting conditions. This is **not a second canonical task registry**. The fact that an event occurred does not guarantee the dashboard *observed* it. Connectors should use change notifications or incremental sync where supported; if a provider offers no push mechanism, polling **that event source for new changes** is compatible with event-driven task assessment. After a restart or detected gap, initialize/replay from source state or a remembered cursor as possible, and run a **one-time recovery audit** where completeness cannot be established; this is not a periodic all-task scan. Where a one-off external event cannot be replayed, a purely volatile event log may miss it; address the concrete durability requirement when encountered instead of mandating a universal event store. Event receipt alone does not grant authority to resume a previously forbidden or side-effecting operation.
 
 Completion of a parent task still depends **only on its own completion criterion**, not automatically on all children being completed. Distinguish 'no evidence of a blocker' from 'permission to execute'; approval policy and external-action safety gates are enforced separately. AI interpretation can assist only when unstructured source material is ambiguous; it is not needed for mechanically checking known dependencies or explicit owner instructions.
 
@@ -277,33 +279,31 @@ The dashboard is the **situational-awareness and navigation surface**.
 
 ## 7. Event loop
 
-The long-term control loop may resemble:
+**Evaluate on observed events, not on an arbitrary periodic scan**. A connector or a scheduled deadline event is a source of signals; the logic routes each signal to the affected tasks and their dependency graph. Unrelated tasks are left alone.
 
 ```text
-state changes
+observed event (user / connector / dependency / scheduled threshold)
     |
     v
-refresh project projection
+event index -> resolve affected task IDs
     |
     v
-classify open loops
-    |
-    +--> autonomous -> dispatch agent
-    |
-    +--> blocked -> track dependency
-    |
-    +--> needs user -> surface decision
-    |
-    +--> schedulable -> planner chooses slot
+refresh only affected canonical data / transient cache
     |
     v
-execution
+recompute dependent task states deterministically
+    |
+    +--> completed -> reflect task's own criterion
+    +--> explicit hold -> retain release condition
+    +--> blocked on dependency -> await change event
+    +--> needs user -> surface question
+    +--> otherwise -> resumable
     |
     v
-checkpoint + source updates
-    |
-    +----> repeat
+update dashboard projection; optional separately authorized work
 ```
+
+Event discovery and event-driven task evaluation are distinct: a provider may need incremental polling to discover changes, without periodic evaluation of the entire task inventory. On cold start, build the initial projection; after a disconnected period, catch up from connector cursors or perform a bounded recovery audit if completeness is unknown. Source events do not themselves authorize external actions or imply automatic dispatch.
 
 ## 8. Thin-layer principle
 
@@ -432,7 +432,7 @@ Practical responsibility names remain **criteria / logic / connectors / web**:
 - `connectors`: source-specific reads/writes, event sources and optional local storage;
 - `web`: routes, rendered dashboard and HTMX interaction.
 
-Do not generate modules for concepts without actual use in a vertical slice. The full list of display states, the local DB/cache implementation, event retention and review cadence remain implementation decisions.
+Do not generate modules for concepts without actual use in a vertical slice. The full list of display states, the local DB/cache implementation, retention and source-specific event detection / reconnection behavior remain implementation decisions. **Routine task re-evaluation itself is event-driven, not scheduled wholesale.**
 ## 13. Optional Telegram personal-account adapter (requirement, 2026-10-27)
 
 The owner wants to **optionally connect their own Telegram account**, allowing the assistant to **read conversations** and, when authorized, **send messages under the owner's identity**. This is a future desired capability, not an active connection or permission to read/send now. Track in [issue #21](https://github.com/Ishayahu/work-control-plane/issues/21).
