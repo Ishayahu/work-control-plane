@@ -55,7 +55,7 @@ The earlier `Project / Workstream / Thread` three-tier distinction is being repl
 
 ### Task
 
-A unit of work or intentional activity, large or small, identified by a stable ID and optionally a parent-task reference. A task can have children and can refer to its own canonical external store. Status, checkpoints, user decisions, AI assessment, next action, schedule and evidence belong to the task's canonical context rather than to an indispensable database on the Control Plane host.
+A unit of work or intentional activity, large or small, identified by a stable ID and optionally a parent-task reference. A task can have children and can refer to its own canonical external store. **Each task, including a parent task, is completed against its own completion criterion.** Completion of every child task does not automatically complete the parent: assembly, integration, verification or other required outcomes may remain. Conversely, how incomplete child tasks affect evaluation of the parent's criterion depends on that criterion; do not invent a universal rule. Status, checkpoints, user decisions, AI assessment, next action, schedule and evidence belong to the task's canonical context rather than to an indispensable database on the Control Plane host.
 
 **At creation, explicitly determine the task's completion criterion.** It may be deliberately absent (e.g. learning French purely for enjoyment), but not merely overlooked. When present, express an observable result/condition and use it in completion assessment; when absent, do not assume that an activity will ever enter a terminal completed state.
 
@@ -69,7 +69,7 @@ A task may have **multiple tags** (e.g. `paid`, `unpaid`, `creative`, `translati
 
 Initially represent this with a small task `tags` collection; **do not require separate Tag/Category domain entities or a taxonomy-management system** until real usage demonstrates a need. If some tags later describe mutually exclusive values along one dimension (e.g. paid vs unpaid), consider a controlled category/facet and validation at that point, without changing the basic recursive Task model.
 
-Do not infer `unpaid` merely from the absence of a `paid` tag. Whether child tasks inherit tags from parents and whether tags affect priority should be explicitly decided later rather than silently assumed.
+**Inheritance is the default:** a child task's effective tags include the effective tags of its parent (transitively), unless explicitly overridden for that child. Support locally added tags and explicit exclusions of inherited tags; conceptually, `effective_tags(child) = (effective_tags(parent) ∪ added_tags(child)) − excluded_tags(child)`. Do **not** materialize inherited tags as independent local assignments by default, so a parent update propagates while a child's explicit exclusion remains effective. The override mechanism must work for multiple levels of nesting. Do not infer `unpaid` merely from absence of `paid`, and do not implicitly let mutually exclusive labels coexist: resolving controlled/exclusive tag dimensions remains a later schema decision. Whether tags directly affect priority is not yet decided.
 
 ### Reference
 
