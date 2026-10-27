@@ -471,16 +471,16 @@ This is an implementation direction, not a claim that the architecture is fully 
 
 ### Proposed minimum, subject to host/proxy review
 
-Prefer implementing the first access gate at the HTTPS reverse proxy (for example, Nginx `auth_basic` with credentials stored outside this repository) rather than writing custom password/session handling inside Bottle or another Python microframework. This is a **candidate deployment choice**, not confirmation that Nginx is already in use. A managed identity-aware gateway, VPN/zero-trust access proxy, or properly maintained app-session login may be considered if better suited to the actual hosting and logout/user-experience needs.
+**Current access choice: mTLS using individual client certificates and private keys on the owner's controlled devices, preferably enforced at the HTTPS reverse proxy (e.g., Nginx if actually used).** The hosting/proxy is not yet verified. The user does not require access from unmanaged devices. This choice avoids adding a username/password login flow to Bottle, but the issuance and revocation system still needs to be designed.
 
 - Require HTTPS on every public request. HTTP must not expose private content or accept credentials.
 - Protect **all** HTML, HTMX endpoints, API routes, static assets containing private information, and command paths; default-deny, with no unintended unauthenticated bypass.
 - Keep the Python process bound to loopback/private network where applicable so clients cannot bypass the proxy.
-- Use unique strong credentials; store only appropriately hashed verifier(s)/deployment secrets in private server configuration. Never commit real credentials or embed them in HTML/JS or public repository examples.
-- Apply login rate limiting/monitoring as feasible. Never treat concealment of a URL as authentication.
+- Keep client **private keys** protected and out of source control, HTML, JS and logs. A client certificate without the matching private key cannot authenticate. Issue separate certificates per device when practical; define import, backup, expiration/renewal and revocation processes. Client and server TLS certificates serve different purposes.
+- Reject missing, invalid, expired and revoked client certificates using an appropriate trust/revocation policy; monitor failed access attempts. Never treat concealment of a URL as authentication.
 - Avoid state-changing `GET` routes. **Authenticated state-changing commands still need CSRF protection** (anti-CSRF token and/or verified origin with appropriate defense in depth), input validation, and explicit authorization boundaries.
 - HTMX same-origin requests must remain authenticated. Tests must cover both full-page navigation and HTMX fragment/action endpoints.
-- Basic authentication is a low-complexity first option, but browsers offer an awkward login prompt and unreliable logout. If a polished login/logout flow is a concrete requirement, evaluate a server-side session solution instead.
+- mTLS is device-key possession authentication, not a per-action approval mechanism. If a later requirement demands access from unmanaged devices or a distinct login/logout flow, reconsider a managed access gateway or server-side session solution rather than quietly weakening the chosen policy.
 
 **Deployment gate:** local fixture-based development may proceed without production login; however, **no Internet-exposed deployment containing real/personal data or usable action endpoints is permitted until the protection is implemented and tested**. Track this as a distinct, reviewable security/deployment issue. No need for Django solely because the app requires a single login.
 
