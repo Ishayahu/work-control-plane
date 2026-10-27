@@ -63,6 +63,14 @@ Distinguish **purpose** (why the task is valuable or which external goal it serv
 
 Routine obligations need not be fabricated as evergreen tasks. For example, do not create "provide IT support" merely as a catch-all if there is no actionable work; create concrete repair/prevention tasks as needed. Do not create a special permanent "project" solely to group these.
 
+### Task tags and categories (agreed minimal requirement, 2026-10-27)
+
+A task may have **multiple tags** (e.g. `paid`, `unpaid`, `creative`, `translation`, `learning`). The dashboard must support filtering and grouping by tags **independently of the parent/child task hierarchy**. A single task may be both paid and creative; tagging must not force it into one exclusive category.
+
+Initially represent this with a small task `tags` collection; **do not require separate Tag/Category domain entities or a taxonomy-management system** until real usage demonstrates a need. If some tags later describe mutually exclusive values along one dimension (e.g. paid vs unpaid), consider a controlled category/facet and validation at that point, without changing the basic recursive Task model.
+
+Do not infer `unpaid` merely from the absence of a `paid` tag. Whether child tasks inherit tags from parents and whether tags affect priority should be explicitly decided later rather than silently assumed.
+
 ### Reference
 
 An identifier/link to the real source, including GitHub issue/repository/path, document, Google Sheet range, chat or agent session. The older `Thread` concept is normally just a **Reference**, not an independently managed entity. A task may have multiple references; references retain source provenance.
