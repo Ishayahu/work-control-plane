@@ -539,7 +539,24 @@ Separation of concerns:
 
 The website's **mTLS client certificate** authenticates the owner to Work Control Plane; it does not authenticate to Telegram and does not imply authorization to send a specific message. The first Bottle shell (#2) must not be expanded into a Telegram integration prematurely.
 
-## 14. Open architectural questions
+## 14. Project-owned state and recovery of uncertain external actions (working decision, 2026-10-27)
+
+**Canonical project state belongs to the project itself**, including current work state, when/why it was paused, blockers, user decisions, checkpoint and next action. If a project has no writable native store (e.g., it only exists in a chat), create or attach a **project-owned companion artifact** in an existing durable system. The Work Control Plane must not be the unique source of truth for these facts. A local database, if ever used, can initially be a disposable projection/index/cache recoverable from project sources. Do not introduce mandatory SQLite/PostgreSQL just to hold project status.
+
+For an external action that might have side effects (e.g. sending a Telegram message), use a small **project-owned durable operation record** when recovery matters:
+
+1. Record the exact instruction and authorization, target, parameters, and unique operation identifier **before** attempting it (`pending` or equivalent).
+2. Execute through the appropriate connector.
+3. On confirmed provider success, record the external result reference and mark `completed`; don't confuse an HTTP/UI reply with provider confirmation.
+4. After a crash or lost response, a record that lacks `completed` means **outcome unknown**, not automatically `failed` or `not executed`.
+5. Query the provider, where possible, for evidence that the operation occurred. Confirm `completed` if reliably identified; if not observed, present 'apparently not completed' with evidence/limits; if ambiguity remains, explicitly mark it **uncertain**.
+6. **Do not silently retry irreversible/external actions.** Ask the owner to verify or approve a retry. Provider-level deduplication/idempotency may reduce risk where supported but cannot be assumed.
+
+The user-facing wording should distinguish: `confirmed_completed`, `apparently_not_completed`, `outcome_unknown`. Absence of a matching outgoing Telegram message is not necessarily proof of non-delivery (history may be incomplete/deleted; identical messages may be ambiguous). Avoid inventing a guarantee of exactly-once delivery.
+
+Retain operation approvals and the relevant audit history with the corresponding project (or its project-owned companion store) if durable recovery is required. If a particular external action truly cannot be recovered without separate infrastructure, demonstrate that failure case before introducing a central mandatory operation database. **Loss of the Control Plane host should not erase canonical project decisions or automatically cause repeated sends.**
+
+## 15. Open architectural questions
 
 - Where should control metadata live?
 - How are checkpoints produced and validated?
