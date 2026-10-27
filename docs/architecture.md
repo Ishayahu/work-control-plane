@@ -49,119 +49,38 @@ Work Control Plane projection
 
 The control plane may persist coordination metadata, but it should not duplicate domain state unnecessarily.
 
-## 3. Core entities
+## 3. Minimal task-centered logical model (working simplification, 2026-10-27)
 
-### Project
+The earlier `Project / Workstream / Thread` three-tier distinction is being replaced in the **proposed shared Control Plane model** by a single, optionally nested **Task**. The owner has questioned the need for a separate `Project` or `Workstream` type: a large task can be decomposed into child tasks indefinitely. Existing source systems and repository names need not be renamed. References to "project" or "workstream" elsewhere in this document may still describe real-world source organization, not an additional mandatory logical entity.
 
-A durable goal or responsibility.
+### Task
 
-Possible fields:
+A unit of work or intentional activity, large or small, identified by a stable ID and optionally a parent-task reference. A task can have children and can refer to its own canonical external store. Status, checkpoints, user decisions, AI assessment, next action, schedule and evidence belong to the task's canonical context rather than to an indispensable database on the Control Plane host.
 
-- id
-- name
-- objective
-- priority
-- status
-- source references
-- scheduling policy
+**At creation, explicitly determine the task's completion criterion.** It may be deliberately absent (e.g. learning French purely for enjoyment), but not merely overlooked. When present, express an observable result/condition and use it in completion assessment; when absent, do not assume that an activity will ever enter a terminal completed state.
 
-### Workstream
+Distinguish **purpose** (why the task is valuable or which external goal it serves) from **completion criterion** (how to recognize its finish). A task can have intrinsic enjoyment value without an externally measurable goal. In otherwise comparable circumstances, a task without a defined outcome/external goal may deserve lower *default* scheduling priority than a task explicitly serving an important goal (English for an interview versus French for fun). This is **not** an unconditional priority rule: deadlines, responsibilities, explicit owner priorities and other factors may override it. No numeric weights or inference rules agreed yet.
 
-A coherent branch of work inside a project.
+Routine obligations need not be fabricated as evergreen tasks. For example, do not create "provide IT support" merely as a catch-all if there is no actionable work; create concrete repair/prevention tasks as needed. Do not create a special permanent "project" solely to group these.
 
-Examples:
+### Reference
 
-- literature review;
-- implementation;
-- data collection;
-- writing;
-- debugging.
-
-### Thread
-
-A concrete execution context.
-
-Examples:
-
-- a ChatGPT conversation;
-- a coding-agent session;
-- a research run;
-- a GitHub issue;
-- a document-writing session.
-
-A thread is important because one project may have several simultaneous conversations or agents.
-
-### Checkpoint
-
-A compact resumable state.
-
-A checkpoint should answer:
-
-- what has been completed;
-- what is currently believed / decided;
-- what artifacts or sources changed;
-- what remains open;
-- what next action is recommended;
-- whether human input is required.
-
-The checkpoint is a handoff protocol between sessions.
-
-### Next Action
-
-The next meaningful unit of work, not merely the next UI click.
+An identifier/link to the real source, including GitHub issue/repository/path, document, Google Sheet range, chat or agent session. The older `Thread` concept is normally just a **Reference**, not an independently managed entity. A task may have multiple references; references retain source provenance.
 
 ### Dependency
 
-A condition that prevents continuation.
+A directed dependency from a task onto another task or a condition (e.g. awaiting a reply, document or decision). The dependency is a relation, not necessarily a free-standing object with a separate life cycle. Distinguish unconfirmed/unknown conditions.
 
-Examples:
+### Other aspects are data, not mandatory core entities
 
-- missing document;
-- awaited reply;
-- unavailable credential;
-- unresolved architectural decision;
-- calendar event.
+- **Checkpoint**: resumable state, decisions, changed artifacts, outstanding questions and next action.
+- **Needs user**: assessed/derived criterion describing required human input, work or approval.
+- **Autonomy policy**: separately enforced permission rules, not an AI-inferred grant.
+- **Scheduling metadata**: deadlines, duration, effort/attention, urgency and priority criteria.
+- **Source of truth**: task-owned reference to canonical storage; no compulsory shared physical file format.
+- **AI assessment**: individual criterion values, evidence, timestamps and assessment version.
 
-### Needs User
-
-A first-class distinction.
-
-Suggested states:
-
-- `no` — AI may continue;
-- `short_input` — a small choice or answer is needed;
-- `deep_work` — joint reasoning is required;
-- `approval` — action is ready but requires authorization.
-
-### Autonomy Policy
-
-Defines actions the AI may take without asking.
-
-Example:
-
-```yaml
-autonomy:
-  research: true
-  draft: true
-  edit_project_files: true
-  create_new_external_resources: ask
-  delete_data: ask
-  spend_money: never
-  external_communication: ask
-```
-
-### Source of Truth
-
-Pointers, not copies.
-
-Examples:
-
-- Git repository/path;
-- Google Sheet ID/range;
-- document URL;
-- issue ID;
-- database record;
-- agent/chat/thread reference.
+This is a conceptual model for discussion; physical Python classes, field constraints, relationship cardinality, completion behavior of parent tasks and source adapters should be decided through small real use cases rather than created wholesale now.
 
 ## 4. Work states
 
