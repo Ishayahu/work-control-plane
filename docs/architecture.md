@@ -506,11 +506,13 @@ Use the already-existing **`Ishayahu/main-ai`** context repository as the discov
 - The in-memory Control Plane projection may cache task records, but such caches are disposable/reconstructible. Avoid bidirectional status synchronization and duplicate authoritative records.
 - Before applying this design in code, check that the existing registry covers the root activities needed for the dashboard; don't presume it is exhaustive or machine-readable without adaptation.
 
-### Migration out of the existing planner (agreed direction, not yet executed)
+### Existing records and canonical routing: no migration or deletion requirement (corrected, 2026-10-28)
 
-The existing Google Sheets planner contains long-lived project records largely so those projects will not be lost. For an item with its own suitable GitHub repository, **move canonical task state into that repository**, point the `main-ai` registry there, and only then remove the duplicate project row from the planner. When there is no suitable dedicated repository or other native home, keep the planner as the canonical source for now. Do not create a new central task store in the dashboard.
+The dashboard should **not require moving, deleting, reconciling or synchronizing** legacy copies of task records. The existing Google Sheets planner and all `main-ai` content remain **unchanged** during architecture work, and do not need to be cleaned up when the dashboard is introduced. A future explicit, separately authorized cleanup is optional, not a prerequisite.
 
-This is a staged, verified transfer of authority, **not** an instruction to delete current Sheets rows immediately. First preserve/check the current completion condition, task state, history/decisions, child-task links and references in the destination; verify that the router resolves to the new owner and dashboard can read it. Archive or remove the old record only as part of a separately approved migration operation with a reversible backup. Existing temporary planning/scheduling appointments may still reference a canonical task; they must not become a second copy of its progress/status.
+For each registered root Task, the context registry should ultimately resolve to **one designated canonical state location** (e.g. `Ishayahu/work-control-plane` for P031), not one link *total*: incidental links to related artifacts may remain. A valid state change goes **only to that canonical location** through its connector. Any older state copies in Sheets or elsewhere are out of scope and are not consulted to reconcile the canonical status. The task source link tells the system which connector to use; duplicate provider selectors are unnecessary.
+
+Current `Ishayahu/main-ai/initiatives/REGISTRY.md` is a human-oriented registry and some rows such as P031 already contain several links (context card and Sheets). Therefore it is an **implementation task**, not an established present fact, to resolve an unambiguous canonical location from the existing navigation chain. Until resolved, the dashboard should not guess a write destination. **No current changes to `main-ai`, Google Sheets or other task stores are authorized by this planning decision.**
 
 ### Normalized read/write contract (to define with concrete examples)
 
