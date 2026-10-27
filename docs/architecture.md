@@ -55,7 +55,7 @@ The earlier `Project / Workstream / Thread` three-tier distinction is being repl
 
 ### Task
 
-A unit of work or intentional activity, large or small, identified by a stable ID and optionally a parent-task reference. A task can have children and can refer to its own canonical external store. **Each task, including a parent task, is completed against its own completion criterion.** Completion of every child task does not automatically complete the parent: assembly, integration, verification or other required outcomes may remain. Conversely, how incomplete child tasks affect evaluation of the parent's criterion depends on that criterion; do not invent a universal rule. Status, checkpoints, user decisions, AI assessment, next action, schedule and evidence belong to the task's canonical context rather than to an indispensable database on the Control Plane host.
+A unit of work or intentional activity, large or small, identified by a stable ID and optionally a parent-task reference. A task can have children and can refer to its own canonical external store. **Each task, including a parent task, is completed against its own completion criterion.** Completion of every child task does not automatically complete the parent: assembly, integration, verification or other required outcomes may remain. Conversely, how incomplete child tasks affect evaluation of the parent's criterion depends on that criterion; do not invent a universal rule. A task's durable definition (completion condition, declared dependencies, explicit owner-imposed holds, consequential decisions/checkpoints, etc.) belongs in its canonical source. **Ephemeral operating labels** such as 'awaiting an answer in the current conversation' or 'resumable' may live in a local Control Plane projection/cache and need not be written back on every exchange. Losing the projection calls for a new audit rather than assuming it preserved transient state. Irreversible external-action approvals/operation records retain the separate durable recovery requirements described in §14.
 
 **At creation, explicitly determine the task's completion criterion.** It may be deliberately absent (e.g. learning French purely for enjoyment), but not merely overlooked. When present, express an observable result/condition and use it in completion assessment; when absent, do not assume that an activity will ever enter a terminal completed state.
 
@@ -90,19 +90,19 @@ A directed dependency from a task onto another task or a condition (e.g. awaitin
 
 This is a conceptual model for discussion; physical Python classes, field constraints, relationship cardinality, completion behavior of parent tasks and source adapters should be decided through small real use cases rather than created wholesale now.
 
-## 4. Work states
+## 4. Work state: durable facts, computed blocks and transient dialogue state (revised, 2026-10-28)
 
-A dashboard should distinguish at least:
+**Do not maintain a manually updated persisted status enum for every conversation turn.** For ordinary unfinished work, **resumable / available for continuation** is the default after a source refresh, subject to verified dependencies and explicit holds. A status displayed on the dashboard is primarily a **projection**, not independent project-owned data.
 
-- **Ready / resumable** — can continue now.
-- **AI can continue** — no user involvement needed.
-- **Needs short input** — a small decision blocks progress.
-- **Needs deep work** — human reasoning time is required.
-- **Blocked externally** — waiting for a dependency.
-- **Parked** — intentionally paused.
-- **Complete** — no open loop.
+Three separate mechanisms:
 
-This is more useful than a single generic "in progress" state.
+1. **Computed dependency blocker.** Declared task-to-task dependencies live in the canonical task source; program logic checks their present satisfaction. If a dependency is unfinished or unverified, show the appropriate blocked/unknown condition without writing a second 'blocked' status to the dependent task.
+2. **Durable explicit hold.** If the owner explicitly says 'do not continue until X happens' (e.g. awaiting a response/permission from someone else, not readily expressible as an existing task dependency), save this block with its **reason and release condition** in the task's canonical source. Do not lose it when the Control Plane host is reset. The condition may be checked on later reviews, with the owner’s instruction remaining authoritative.
+3. **Transient conversation state.** A question asked to the owner, an outstanding answer in the current conversation, a temporarily suspended session or available/resumable work can be tracked in the local dashboard database/cache. A response updates local state; do not commit to GitHub for each question/answer. The owner accepts that after loss of local state the system re-audits the task instead of recovering all transient dialog markers.
+
+Optional cross-task **event inbox/index** in the dashboard may correlate observed events (e.g. an external reply or a confirmed completed task) with recorded waiting conditions and schedule a recheck. This is **not a second canonical task registry**. Polling/re-reading providers can recover replayable events after a cache loss. Where a one-off external event cannot be replayed, a purely volatile event log may miss it; solve that concrete durability case when encountered, rather than prematurely mandating a universal event store. Event receipt alone does not grant authority to resume a previously forbidden or side-effecting operation.
+
+Completion of a parent task still depends **only on its own completion criterion**, not automatically on all children being completed. Distinguish 'no evidence of a blocker' from 'permission to execute'; approval policy and external-action safety gates are enforced separately. AI interpretation can assist only when unstructured source material is ambiguous; it is not needed for mechanically checking known dependencies or explicit owner instructions.
 
 ## 5. Scheduler integration
 
@@ -411,44 +411,28 @@ This is an implementation direction, not a claim that the architecture is fully 
 
 **Deployment gate:** local fixture-based development may proceed without production login; however, **no Internet-exposed deployment containing real/personal data or usable action endpoints is permitted until the protection is implemented and tested**. Track this as a distinct, reviewable security/deployment issue. No need for Django solely because the app requires a single login.
 
-## 12. AI-assessed criteria and deterministic status derivation (working architecture, 2026-10-27)
+## 12. State interpretation: deterministic by default, AI only where needed (revised, 2026-10-28)
 
-**Separate semantic interpretation from formal state derivation.** In this AI-first control plane, the model should **not be the final arbiter of a project's status or authority to act**.
+The owner rejected introducing an additional universal AI rubric for readiness when the relevant facts are already explicitly known. **Completion criteria are defined on Task creation**; no duplicate set of 'completion criteria' is needed. State derivation starts from:
 
-Pipeline:
+- the task's own completion criterion and confirmed completion facts;
+- explicit dependencies and their checked satisfaction;
+- durable, explicitly imposed holds with reasons and release conditions in the canonical source;
+- transient outstanding human questions and dialogue progress from the local Control Plane projection;
+- independent authorizations and external action safety policy.
 
-1. Collect bounded, traceable **facts** from source adapters: messages, events, issues, checkpoints, explicit user instructions.
-2. Load **human-readable domain definitions** (for example Markdown criteria for readiness, blocked dependencies, sufficiency of context, human decisions) and an agreed output schema.
-3. Ask an AI model to **assess individual criteria**, returning validated structured values and supporting source references. Values need not be numeric: use enums/booleans/unknown where meaningful; numeric scores/weights only when useful and their scale is defined.
-4. Apply **deterministic, reviewable Python rules** to the assessment and separately stored explicit user choices/policies to derive the displayed state, including precedence among states.
-5. Preserve criterion values, evidence, model/version/rule-version, timestamp and uncertainty. Show the explanation and let a human correct assessments. Re-evaluate on meaningful source changes or explicit refresh, not necessarily on each page request.
+Ordinary unfinished work defaults to **resumable**, unless verified dependency status or an explicit hold prevents continuation. When local state is lost, re-read the canonical task source and dependencies and perform a fresh audit. The assistant may need to ask a question again; it must **not** infer a fresh permission to perform irreversible actions from a cleared cache.
 
-Illustrative **hypothetical** assessment (schema not fixed yet):
+**Deterministic code** resolves known dependencies, explicit flags and observed events. An LLM can optionally help extract meaning from unstructured documents or conversations and propose uncertain assessments, with provenance and owner correction, but is **not required** for routine status derivation and must never override an explicit hold or grant authorization.
 
-```json
-{
-  "context_sufficient": "yes",
-  "next_step_defined": "yes",
-  "blocking_dependency": "no",
-  "requires_user_decision": "no",
-  "assessment_confidence": 0.91
-}
-```
+Practical responsibility names remain **criteria / logic / connectors / web**:
 
-The program can conclude **technically ready** when relevant criteria are affirmative and no blockers are known. However, *technical readiness* is separate from *owner intent* (e.g. deliberately parked), *authorization* (whether AI may perform the next action), and *data freshness*. A model inference must never grant spending, deleting, externally messaging or other protected authority.
+- `criteria`: task completion criteria and any human-readable interpretations genuinely needed, not a mandatory AI-status-scoring system;
+- `logic`: deterministic status derivation, dependency checks, optional interpretation, policy checks and event correlation;
+- `connectors`: source-specific reads/writes, event sources and optional local storage;
+- `web`: routes, rendered dashboard and HTMX interaction.
 
-Practical module boundaries (agreed naming for application code, 2026-10-27):
-
-- **Criteria (`criteria/`)**: human-readable meanings and assessment rubrics, plus the declared criterion vocabulary. This is deliberately named **criteria**, not `domain/` and not generic runtime settings.
-- **Logic (`logic/`)**: collect/assess facts, validate structured AI answers, apply deterministic status derivation and authorization policy, coordinate commands. Formerly called `services/`.
-- **Connectors (`connectors/`)**: exchange data with external providers, AI APIs, Telegram, and local/remote persistence. Formerly called `adapters/`.
-- **Web (`web/`)**: Bottle routing, request/response integration, Jinja2 presentation and HTMX partials (roughly controller + view). Keep substantive logic outside this layer.
-- **Runtime configuration**: separate from criteria and never assume secrets belong in the public repository.
-
-These labels describe responsibilities; create modules/directories only when a concrete implementation slice needs them.
-
-Do not prematurely create directories for every conceptual responsibility. Decide the actual schema, statuses, precedence and override semantics in a separate small, human-led slice before implementation.
-
+Do not generate modules for concepts without actual use in a vertical slice. The full list of display states, the local DB/cache implementation, event retention and review cadence remain implementation decisions.
 ## 13. Optional Telegram personal-account adapter (requirement, 2026-10-27)
 
 The owner wants to **optionally connect their own Telegram account**, allowing the assistant to **read conversations** and, when authorized, **send messages under the owner's identity**. This is a future desired capability, not an active connection or permission to read/send now. Track in [issue #21](https://github.com/Ishayahu/work-control-plane/issues/21).
@@ -468,7 +452,7 @@ The website's **mTLS client certificate** authenticates the owner to Work Contro
 
 ## 14. Project-owned state and recovery of uncertain external actions (working decision, 2026-10-27)
 
-**Canonical project state belongs to the project itself**, including current work state, when/why it was paused, blockers, user decisions, checkpoint and next action. **Existing learning projects are already registered in GitHub**; their coordination records should be maintained there, alongside their project context, rather than assuming they exist only in ChatGPT chats. Chat sessions may be learning/execution contexts, not the sole project stores. Only if a genuinely new project lacks a suitable writable canonical location should we evaluate attaching a project-owned companion artifact; do not introduce one for existing learning projects by default. The Work Control Plane must not be the unique source of truth for these facts. A local database, if ever used, can initially be a disposable projection/index/cache recoverable from project sources. Do not introduce mandatory SQLite/PostgreSQL just to hold project status.
+**Durable task facts and significant instructions belong to that task's single canonical source**: definition, declared dependencies, completion criteria, explicit owner-imposed holds with reason/release condition, consequential decisions/checkpoints and relevant history. A transient 'awaiting the user's answer' marker or 'resumable' label is **not** necessarily canonical task state. Local dashboard storage can retain such markers, recent assessments/events and caches and may be lost; its loss triggers re-evaluation. Do not update a GitHub repository merely because the assistant asked a routine question or received an answer. Existing learning projects already have GitHub context; do not create companion stores for them without reason. No mandatory SQLite/PostgreSQL requirement is imposed solely by this conceptual decision. **The distinct durable operation records below are still required for recovery of side-effecting external actions.**
 
 For an external action that might have side effects (e.g. sending a Telegram message), use a small **project-owned durable operation record** when recovery matters:
 
@@ -491,7 +475,7 @@ Retain operation approvals and the relevant audit history with the corresponding
 - **Write:** when a change has been explicitly approved and the target source is writable, map the requested change back into that project's native representation. Do not silently modify a different source or assume every connector supports writing. Handle version/conflict checks appropriate to each source.
 - **Capabilities:** connectors may be read-only or provide a limited range of mutations; surface unsupported operations explicitly.
 - **No loss of source-specific detail:** normalized views are deliberately partial; do not rewrite or discard fields the shared model does not understand.
-- **Project-local authority:** a project's state, reason for being paused, checkpoints and history remain at the canonical project location. The Control Plane cache is reconstructible.
+- **Project-local authority:** durable task definitions, explicit holds, consequential decisions and essential checkpoints/history remain at the canonical task location. Operational conversation flags and derived statuses may be cached in Control Plane and reconstructed or re-audited as needed; no unnecessary status write-back after each exchange.
 - **Architecture boundary:** generic logic consumes a stable application-facing contract, without hardcoding GitHub/Sheets data formats. The contract should emerge from real vertical slices rather than speculative interfaces.
 
 ### Discovery via the existing context router (working decision, 2026-10-27)
