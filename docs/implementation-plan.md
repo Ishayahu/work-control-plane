@@ -38,6 +38,19 @@ The application may start with Bottle and later **evaluate** Pyramid, Flask or a
 - Before migration, identify a specific observed limitation and define equivalent end-to-end behavior and tests, including auth and CSRF protections. Compare time spent, refactoring effort, developer comprehension and actual outcomes; do not infer one framework's general superiority from non-equivalent prototypes.
 - Migration still entails real cost: routing, request lifecycles, middleware, error handling, authentication, tests and deployment plumbing may change even when domain logic and templates remain stable.
 
+## AI-first state assessment mechanism (architectural agreement; not first-slice implementation)
+
+Domain vocabulary and evaluation criteria should be primarily **human-readable, versioned definitions**. Given a bounded and cited source context, an AI assessor assigns **typed values to separate criteria** (yes/no/unknown, categories, or defined-scale scores where warranted). A **deterministic Python policy/decision function** combines those values and independent explicit user choices to derive displayed work state and permissible actions.
+
+- The human developer decides the criterion vocabulary, meanings, status precedence, uncertainty semantics and any weights/thresholds.
+- The model assesses facts; it does not unilaterally set final status or grant authorization to send, spend, delete, or dispatch.
+- Preserve evidence/source refs, timestamps, rule/prompt/model versions and human corrections; do not make a paid model call for every page render.
+- Initial work-state fixture/filter issues (#3–#4) may use **provided structured assessments** and Python deterministic rules. Actual LLM classification arrives as a later, separately reviewed vertical slice after input contracts and storage are settled.
+
+## Optional personal Telegram connector (issue #21)
+
+Future integration: authorized personal-account Telegram messaging (read selected dialogs, prepare replies, send **only after explicit human approval** unless a later scoped policy is approved). Explore an MTProto user client or supported connector; a Bot API identity is insufficient for general personal dialogs and user-identity sending. Keep inbound message reading separate from outbound command execution, credentials/session isolated, delivery and approval audited, and background sync separate from Bottle. **No real Telegram client or connection in the first dashboard shell.**
+
 ## Why not adopt a full product first?
 
 Existing systems cover lower layers: GitHub Issues/PRs cover coding work; Calendar and task systems own commitments; AI execution tools can perform work. The control plane should remain a thin, replaceable projection and coordination layer. Before any substantial new connector or subsystem, compare a supported existing integration or product against custom code.
