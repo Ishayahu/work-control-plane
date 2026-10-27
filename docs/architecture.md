@@ -305,6 +305,8 @@ update dashboard projection; optional separately authorized work
 
 Event discovery and event-driven task evaluation are distinct: a provider may need incremental polling to discover changes, without periodic evaluation of the entire task inventory. On cold start, build the initial projection; after a disconnected period, catch up from connector cursors or perform a bounded recovery audit if completeness is unknown. Source events do not themselves authorize external actions or imply automatic dispatch.
 
+**Time-based triggers (agreed 2026-10-28): use the operating system's `cron` rather than building a separate Control Plane timing engine.** Cron jobs may either (a) emit a specific task-related event for selective state re-evaluation, or (b) directly start an approved operation such as sending a scheduled email or preparing a report. Use a small command/handler entry point; do not require all scheduled actions to pass through a redundant internal event queue. For outbound side effects, the operation must have prior explicit authorization or a narrowly scoped standing policy; cron timing does not grant permission. Preserve operation IDs/receipts and uncertain-outcome recovery safeguards from §14, to avoid accidental duplicates on reruns. Exact one-off registration/cancellation and provider-specific scheduling mechanics can be chosen when implemented; no need for blanket periodic task scans.
+
 ## 8. Thin-layer principle
 
 Before implementing functionality, check whether it already exists in production tools.
