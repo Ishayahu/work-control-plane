@@ -38,6 +38,10 @@ The application may start with Bottle and later **evaluate** Pyramid, Flask or a
 - Before migration, identify a specific observed limitation and define equivalent end-to-end behavior and tests, including auth and CSRF protections. Compare time spent, refactoring effort, developer comprehension and actual outcomes; do not infer one framework's general superiority from non-equivalent prototypes.
 - Migration still entails real cost: routing, request lifecycles, middleware, error handling, authentication, tests and deployment plumbing may change even when domain logic and templates remain stable.
 
+## Agreed names for application responsibilities
+
+Use the straightforward conceptual vocabulary **criteria / logic / connectors / web**. `criteria/` stores human-readable assessment definitions (not deployment settings); `logic/` handles assessment workflows and deterministic rules; `connectors/` provides provider integrations and persistence access; `web/` handles Bottle routes and Jinja2/HTMX responses. The names replace earlier generic `domain/services/adapters` terminology for code organization; they do not force four directories in the first slice.
+
 ## AI-first state assessment mechanism (architectural agreement; not first-slice implementation)
 
 Domain vocabulary and evaluation criteria should be primarily **human-readable, versioned definitions**. Given a bounded and cited source context, an AI assessor assigns **typed values to separate criteria** (yes/no/unknown, categories, or defined-scale scores where warranted). A **deterministic Python policy/decision function** combines those values and independent explicit user choices to derive displayed work state and permissible actions.
