@@ -510,12 +510,15 @@ Illustrative **hypothetical** assessment (schema not fixed yet):
 
 The program can conclude **technically ready** when relevant criteria are affirmative and no blockers are known. However, *technical readiness* is separate from *owner intent* (e.g. deliberately parked), *authorization* (whether AI may perform the next action), and *data freshness*. A model inference must never grant spending, deleting, externally messaging or other protected authority.
 
-Practical module boundaries:
-- **Domain definitions**: human-readable concepts/criteria and a small machine-readable criterion vocabulary and decision-rule definition; these do not have to be a large collection of Python classes.
-- **Model/AI adapter**: provider-specific invocation and structured response extraction.
-- **Assessment service**: assemble context, assess criteria, validate and persist the resulting assessment/provenance.
-- **Decision/policy functions**: deterministic derivation and hard authorization checks, independent of the model and web framework.
-- **Web**: render derived results, source evidence, uncertainty and correction/refresh actions.
+Practical module boundaries (agreed naming for application code, 2026-10-27):
+
+- **Criteria (`criteria/`)**: human-readable meanings and assessment rubrics, plus the declared criterion vocabulary. This is deliberately named **criteria**, not `domain/` and not generic runtime settings.
+- **Logic (`logic/`)**: collect/assess facts, validate structured AI answers, apply deterministic status derivation and authorization policy, coordinate commands. Formerly called `services/`.
+- **Connectors (`connectors/`)**: exchange data with external providers, AI APIs, Telegram, and local/remote persistence. Formerly called `adapters/`.
+- **Web (`web/`)**: Bottle routing, request/response integration, Jinja2 presentation and HTMX partials (roughly controller + view). Keep substantive logic outside this layer.
+- **Runtime configuration**: separate from criteria and never assume secrets belong in the public repository.
+
+These labels describe responsibilities; create modules/directories only when a concrete implementation slice needs them.
 
 Do not prematurely create directories for every conceptual responsibility. Decide the actual schema, statuses, precedence and override semantics in a separate small, human-led slice before implementation.
 
