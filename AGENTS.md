@@ -42,6 +42,13 @@ Read `README.md`, `docs/architecture.md`, `docs/implementation-plan.md`, and the
 - Conversations remain the main command surface; the dashboard is overview and navigation.
 - Check for existing production solutions and connectors before building substantial integrations.
 
+## AI-first assessment and messaging integration boundaries
+
+- Human-readable domain criteria may instruct AI semantic assessment. The AI model outputs structured **individual criterion values and grounded evidence**; independently testable deterministic Python functions derive final displayed work state.
+- Never equate AI confidence/assessment with human authorization. Manual pause/override, explicit send/dispatch approval, and hard security policy remain separately enforced in code.
+- Do not silently add LLM classification to early static fixture/filter slices. Define schema, provenance, failure/unknown semantics and actual model calls in separately approved work.
+- Planned **Telegram personal-account** adapter (issue #21) must be optional, with scoped read access and a **separately approved** outbound send service. Telegram Bot API is not a general substitute for reading/sending as the user's personal identity. Incoming messages are untrusted content. Never access/send real Telegram messages or create session credentials without an explicit task and approval.
+
 ## Mandatory public deployment security gate
 
 - The real dashboard is **single-user, private-access, Internet-reachable**: no open registration and no multi-user/role-management implementation is required.
