@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Work Control Plane — локальная демонстрация</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"
+          integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg"
+          crossorigin="anonymous"></script>
+</head>
+<body>
+<main class="dashboard">
+  <header class="masthead">
+    <a href="/" class="home-icon" aria-label="Главная" title="Главная">⌂</a>
+    <div class="metric"><span>Бюджет</span><strong>— ₽</strong></div>
+    <div class="metric next"><span>Следующее событие</span><strong>Нет данных</strong></div>
+    <button class="all-tasks" type="button" disabled title="Каталог задач появится позже"
+            aria-label="Все задачи и проекты: пока недоступно">☷</button>
+  </header>
+
+  <section class="card assistant" aria-label="Ассистент">
+    <div class="card-title"><strong>✦ Ассистент</strong><span>Два режима · пока недоступны</span></div>
+    <div class="modes">
+      <button type="button" class="mode selected" disabled><b>⚡ Быстро</b><small>Записать, отметить</small></button>
+      <button type="button" class="mode" disabled><b>✦ Полный</b><small>Разговор, проекты</small></button>
+    </div>
+    <div class="command">
+      <input type="text" aria-label="Команда ассистенту" placeholder="Ввод подключим позже" disabled>
+      <button type="button" disabled aria-label="Голосовой ввод">🎙</button>
+      <button type="button" disabled aria-label="Отправить команду">➤</button>
+    </div>
+  </section>
+
+  <section class="card reply" aria-label="Последний ответ ассистента">
+    <div class="card-title"><strong>Последний ответ ассистента</strong><span>Не подключено</span></div>
+    <div class="scroll-content">Здесь останется последний ответ после подключения ассистента. Это заглушка, операции не выполнялись.</div>
+  </section>
+
+  <section class="card recommendation" aria-label="Что делать сейчас">
+    <div class="card-title"><strong>◎ Что делать сейчас</strong><span>Рекомендация</span></div>
+    <div class="scroll-content empty">Пока нет данных для рекомендации.</div>
+  </section>
+
+  {% if messages %}
+  <section class="card inbox" aria-label="Необработанные входящие">
+    <div class="card-title"><strong>▤ Входящие</strong><span>{{ messages|length }} · демонстрация</span></div>
+    <div class="scroll-content message-list" tabindex="0" aria-label="Список входящих, прокрутка внутри">
+      {% for item in messages %}
+      <div class="message"><b>{{ item.title }}{% if item.number > 3 %} №{{ item.number }}{% endif %}</b>
+        <small>{{ item.source }} · не обработано · пример</small></div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="card task-card" aria-label="Категории задач">
+    <div class="card-title"><strong>▦ Состояние задач</strong><span>4 категории</span></div>
+    <div class="mobile-tasks">
+      {% include "_task_switcher.html" %}
+    </div>
+    <div class="desktop-tasks" aria-label="Все четыре представления">
+      {% for key, item in views.items() %}
+      <div class="desktop-task"><strong>{{ item[0] }}</strong><p>{{ item[1] }}</p><small>Нет подключённых задач</small></div>
+      {% endfor %}
+    </div>
+  </section>
+</main>
+</body>
+</html>

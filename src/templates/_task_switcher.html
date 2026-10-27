@@ -1,0 +1,17 @@
+<section id="task-switcher" class="task-switcher" aria-label="Состояние задач">
+  <nav class="tabs" aria-label="Четыре представления задач">
+    {% for key, item in views.items() %}
+    <a class="tab{% if selected == key %} active{% endif %}"
+       href="/?view={{ key }}&amp;demo_inbox={{ inbox_case }}"
+       hx-get="/task-view/{{ key }}?demo_inbox={{ inbox_case }}" hx-target="#task-switcher" hx-swap="outerHTML"
+       {% if selected == key %}aria-current="page"{% endif %}>
+      {{ {"mine": "Мне", "ready": "Можно", "ai": "ИИ", "blocked": "Блок"}[key] }}
+    </a>
+    {% endfor %}
+  </nav>
+  <div id="selected-task" class="task-items" aria-live="polite" tabindex="0">
+    <strong>{{ views[selected][0] }}</strong>
+    <p>{{ views[selected][1] }}</p>
+    <small>Демонстрационные данные. Настоящие задачи не подключены.</small>
+  </div>
+</section>
