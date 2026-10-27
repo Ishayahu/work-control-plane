@@ -444,7 +444,47 @@ A useful engineering heuristic for this project is:
 
 > If an action is repeatedly required only to prepare material for the next intellectual step, and it does not require human judgment, it is a candidate for elimination through automation.
 
-## 10. Open architectural questions
+## 10. MVP implementation stack (working decision, 2026-10-26)
+
+**Provisional choice:** Python backend with server-rendered HTML and HTMX for modest interactivity. This reflects current MVP expectations, not an irreversible framework commitment. The specific Python web framework remains undecided.
+
+Why:
+
+- The user expects button actions and status changes to update the relevant page fragment **without a full-page reload**.
+- The initial dashboard is primarily overview, filtering, navigation, and a few high-value commands, not a rich client-side application.
+- Server deployment is acceptable; avoiding a server is not itself a requirement.
+- HTMX keeps interactive views close to Python HTML templates and avoids a separate Svelte/SPA build for now.
+
+Development approach:
+
+1. Begin with one small, annotated end-to-end HTMX interaction (HTTP request, Python handler, returned HTML fragment, target swap). Do not assume prior HTMX experience; explain relevant `hx-*` attributes when implementing.
+2. Keep ordinary links/forms functional where practical; add HTMX progressively for inline refreshes, loading states, and actionable feedback.
+3. Treat background data freshness separately from immediate action feedback. Polling, SSE, or another push mechanism should be chosen only if a concrete use case requires it.
+4. Keep agent execution and external integrations outside the UI rendering layer; the Python application may delegate jobs to an executor/worker. HTMX does not itself execute background work.
+5. Re-evaluate a richer frontend such as Svelte if actual interactions become significantly client-state-heavy; do not introduce it preemptively.
+
+This is an implementation direction, not a claim that the architecture is fully decided.
+
+## 11. Single-user authentication and public deployment requirement (2026-10-27)
+
+**Mandatory product constraint:** The real dashboard will be reachable over the Internet, but access must be limited to its single owner. No public signup, self-service registration, social login, invitation flow, user directory, or role-management UI is required for the MVP. A public GitHub source repository does **not** imply a public dashboard.
+
+### Proposed minimum, subject to host/proxy review
+
+Prefer implementing the first access gate at the HTTPS reverse proxy (for example, Nginx `auth_basic` with credentials stored outside this repository) rather than writing custom password/session handling inside Bottle or another Python microframework. This is a **candidate deployment choice**, not confirmation that Nginx is already in use. A managed identity-aware gateway, VPN/zero-trust access proxy, or properly maintained app-session login may be considered if better suited to the actual hosting and logout/user-experience needs.
+
+- Require HTTPS on every public request. HTTP must not expose private content or accept credentials.
+- Protect **all** HTML, HTMX endpoints, API routes, static assets containing private information, and command paths; default-deny, with no unintended unauthenticated bypass.
+- Keep the Python process bound to loopback/private network where applicable so clients cannot bypass the proxy.
+- Use unique strong credentials; store only appropriately hashed verifier(s)/deployment secrets in private server configuration. Never commit real credentials or embed them in HTML/JS or public repository examples.
+- Apply login rate limiting/monitoring as feasible. Never treat concealment of a URL as authentication.
+- Avoid state-changing `GET` routes. **Authenticated state-changing commands still need CSRF protection** (anti-CSRF token and/or verified origin with appropriate defense in depth), input validation, and explicit authorization boundaries.
+- HTMX same-origin requests must remain authenticated. Tests must cover both full-page navigation and HTMX fragment/action endpoints.
+- Basic authentication is a low-complexity first option, but browsers offer an awkward login prompt and unreliable logout. If a polished login/logout flow is a concrete requirement, evaluate a server-side session solution instead.
+
+**Deployment gate:** local fixture-based development may proceed without production login; however, **no Internet-exposed deployment containing real/personal data or usable action endpoints is permitted until the protection is implemented and tested**. Track this as a distinct, reviewable security/deployment issue. No need for Django solely because the app requires a single login.
+
+## 12. Open architectural questions
 
 - Where should control metadata live?
 - How are checkpoints produced and validated?
