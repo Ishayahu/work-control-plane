@@ -11,7 +11,7 @@ Rationale:
 - The dashboard is primarily a view and navigator; a heavy client application is not currently justified.
 - Running a Python application/server is acceptable. HTMX enhances rendered HTML; it does not replace the backend or an agent executor.
 - Start with fictional fixtures; no real private connectors, external writes, or background agent machinery in the first slice.
-- **Internet-facing release requires single-user authentication** even though no registration or multi-user management is planned. Use a reverse-proxy access gate as the initial candidate; confirm infrastructure before selecting it. See `docs/architecture.md` §11.
+- **Internet-facing release requires single-user authentication** even though no registration or multi-user management is planned. The working choice is **mTLS with client certificates on owner-controlled devices**, enforced by a reverse proxy; confirm the actual hosting, certificate issuance and revocation design before release. See `docs/architecture.md` §11 and issue #20.
 
 ## Development ownership: human-led logic, AI-assisted scaffolding
 
@@ -92,7 +92,7 @@ For the first interaction, demonstrate request method and URL (`hx-get`/`hx-post
 
 Autonomous dispatch/executor, private integrations, full scheduling, automatic dependency resolution, external writes, generalized ingestion and multi-user support. These require independent decisions and explicit authorization.
 
-**Authentication is not deferred beyond public deployment:** the fixture-based shell may be tested locally, but any Internet-exposed instance with real data or actions MUST be gated behind working and tested single-user authentication, HTTPS, and access-control/CSRF protections before going live. Implementation is a dedicated security/deployment issue (not an unreviewed addition to issue #2). The server framework choice and the gateway choice are independent.
+**Authentication is not deferred beyond public deployment:** the fixture-based shell may be tested locally, but any Internet-exposed instance with real data or actions MUST be gated behind working and tested single-user **mTLS** authentication, HTTPS, and access-control/CSRF protections before going live. Implementation is a dedicated security/deployment issue (not an unreviewed addition to issue #2). The server framework choice and the gateway choice are independent.
 
 ## Implementation gate
 
