@@ -1,0 +1,28 @@
+# Canonical root-task metadata for P031; content/drafts and technical plans remain in their native files.
+# Historical planner fields are retained only for provenance, not synchronized back.
+id: "P031"
+title: "Personal Work Control Plane — дашборд проектов и ИИ-работы"
+expected_result: "Создать единый высокоуровневый интерфейс управления всеми параллельными проектами: агрегировать их состояние из существующих источников истины, показывать, где требуется участие Ишаяу, позволять задавать дальнейший маршрут работы и чекпойнты, а ИИ — самостоятельно проходить их до завершения в пределах доступной автономии/бюджета Work, проверяя остаток бюджета между шагами и останавливаясь только при исчерпании ресурса или необходимости решения пользователя; связывать интеллектуальную работу с планировщиком и реально доступным временем."
+role: "Архитектор / разработчик / организатор"
+priority: "Высокий"
+horizon: "Долгосрочный инфраструктурный проект; без жёсткого дедлайна"
+status: "Активный"
+completion_criterion:
+  state: "unknown"
+  description: null
+  note: "Expected result is recorded; a precise verifiable completion condition was not explicitly confirmed."
+legacy_planner_snapshot:
+  source_url: "https://docs.google.com/spreadsheets/d/1KU5FJpEIoY1zgxzdlHIWI2Tc05PqyLYEq-Zb3FHr29I/edit"
+  tab: "Проекты"
+  row: 32
+  read_on: "2026-10-28"
+  values:
+    milestone: "Определить MVP control plane: Project / Workstream / Checkpoint / Next Action / Needs User / Autonomy / Execution Budget и собрать первую рабочую проекцию по существующим проектам; отдельно зафиксировать цикл автономного прохождения чекпойнтов."
+    next_action: "Проверить, какие production-компоненты можно переиспользовать (ChatGPT Work, Linear/Rovo/Motion/Notion и др.), включая их возможности по автономному продолжению работы и учёту лимитов/бюджета; затем спроектировать минимальный тонкий control layer без дублирования существующих хранилищ."
+    progress_percent: 0
+    notes: "Dashboard — только представление, не новый источник истины. Domain state остаётся в GitHub, Drive/Sheets, Calendar, ChatGPT и других профильных системах. Связан с P014 «Personal Knowledge Gateway» как слоем доступа/интеграции и P021 «Планировщик задач» как слоем распределения времени и внимания. Главная цель — снять с Ишаяу административные накладные расходы: контроль множества параллельных проектов, восстановление контекста и постоянный hand-holding ИИ. Исполнительный цикл: пользователь задаёт маршрут/чекпойнты и допустимый бюджет; ИИ доходит до чекпойнта, фиксирует состояние, проверяет остаток бюджета Work и наличие блокирующей зависимости от пользователя; если бюджет остаётся и решение пользователя не требуется — продолжает к следующему чекпойнту, иначе останавливается и явно показывает, что именно требуется."
+current_work:
+  architecture: "docs/architecture.md (working changes in PR #1; not yet merged)"
+  implementation_plan: "docs/implementation-plan.md (PR #1)"
+  planning_pull_request: "https://github.com/Ishayahu/work-control-plane/pull/1"
+  note: "The historical planner milestone and percentage predate current architecture discussions; do not treat them as a live checkpoint."
