@@ -556,7 +556,20 @@ The user-facing wording should distinguish: `confirmed_completed`, `apparently_n
 
 Retain operation approvals and the relevant audit history with the corresponding project (or its project-owned companion store) if durable recovery is required. If a particular external action truly cannot be recovered without separate infrastructure, demonstrate that failure case before introducing a central mandatory operation database. **Loss of the Control Plane host should not erase canonical project decisions or automatically cause repeated sends.**
 
-## 15. Open architectural questions
+## 15. Connector contract: common logical model, native project storage (agreed, 2026-10-27)
+
+**A single normalized interface, not a mandated universal physical file format.** Each project preserves its own canonical data representation (e.g. GitHub Markdown/issues, Google Drive documents, Sheets, or another native store). A source-specific connector translates the project's fields and evidence into the shared in-memory structures consumed by Control Plane logic. No requirement to retrofit every existing project with a common JSON/YAML file.
+
+- **Read:** discover/resolve project source references and project-scoped work state, normalize the subset needed by logic, and preserve source identifiers, timestamps/provenance and unknown/missing values.
+- **Write:** when a change has been explicitly approved and the target source is writable, map the requested change back into that project's native representation. Do not silently modify a different source or assume every connector supports writing. Handle version/conflict checks appropriate to each source.
+- **Capabilities:** connectors may be read-only or provide a limited range of mutations; surface unsupported operations explicitly.
+- **No loss of source-specific detail:** normalized views are deliberately partial; do not rewrite or discard fields the shared model does not understand.
+- **Project-local authority:** a project's state, reason for being paused, checkpoints and history remain at the canonical project location. The Control Plane cache is reconstructible.
+- **Architecture boundary:** generic logic consumes a stable application-facing contract, without hardcoding GitHub/Sheets data formats. The contract should emerge from real vertical slices rather than speculative interfaces.
+
+The next design question is **how the dashboard discovers which projects exist and resolves each project's canonical location**. A recoverable index of source references is not itself a second copy of project state; its placement and reconstruction mechanism are undecided.
+
+## 16. Open architectural questions
 
 - Where should control metadata live?
 - How are checkpoints produced and validated?
