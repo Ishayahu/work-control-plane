@@ -4,7 +4,7 @@ Status: proposed in PR #1, pending human review. The runnable application does n
 
 ## Working technical decision (2026-10-26)
 
-Start with **Python + server-rendered HTML + HTMX**, as already recorded in `docs/architecture.md` on `main`. A Python web framework (Django / other), templating engine, test runner, and deployment details are **not yet selected**. Do not silently choose a framework by generating a large scaffold; decide when starting the first slice.
+Start with **Python + server-rendered HTML + HTMX**, as already recorded in `docs/architecture.md` on `main`. The **working first implementation candidate is Bottle + Jinja2 + HTMX**, with pytest as a test option. This is deliberately small and reversible; hosting, WSGI server, proxy and final dependency pins remain to be decided when implemented. Bottle was chosen for pedagogical minimalism, **not** because it has already been proven best for production.
 
 Rationale:
 - The user wants ordinary actions and state changes to update portions of the page without a full reload.
@@ -27,6 +27,17 @@ Rationale:
 
 Avoid generating a broad speculative architecture with dozens of empty functions. Build a small working vertical slice, then agree on the next seam. Include short annotations explaining HTMX to a developer who has not used it before.
 
+## Framework portability and learning experiment (2026-10-27)
+
+The application may start with Bottle and later **evaluate** Pyramid, Flask or another framework against observed needs. A migration is never mandatory or automatically scheduled. Treat changes of web framework as a practical learning/engineering experiment, not an end in themselves.
+
+- Keep business/domain logic in ordinary Python functions or modules independent of Bottle's request/response globals, decorators and session machinery.
+- Confine route definitions, HTTP adapters, authentication integration and HTMX response concerns to the thin web layer.
+- Use **Jinja2** HTML templates (and fragment partials) rather than committing the UI to Bottle's SimpleTemplate syntax; Bottle and Pyramid both support Jinja2. Keep URLs and framework-specific helpers out of templates where practicable. HTMX itself does not render templates.
+- Build only the files and interfaces required for the current vertical slice, *not* a speculative multi-directory skeleton.
+- Before migration, identify a specific observed limitation and define equivalent end-to-end behavior and tests, including auth and CSRF protections. Compare time spent, refactoring effort, developer comprehension and actual outcomes; do not infer one framework's general superiority from non-equivalent prototypes.
+- Migration still entails real cost: routing, request lifecycles, middleware, error handling, authentication, tests and deployment plumbing may change even when domain logic and templates remain stable.
+
 ## Why not adopt a full product first?
 
 Existing systems cover lower layers: GitHub Issues/PRs cover coding work; Calendar and task systems own commitments; AI execution tools can perform work. The control plane should remain a thin, replaceable projection and coordination layer. Before any substantial new connector or subsystem, compare a supported existing integration or product against custom code.
@@ -46,7 +57,7 @@ Each slice should deliver a small, independently understandable outcome. Build *
 
 | Order | Slice | Ownership / observable result |
 |---:|---|---|
-| 1 | Runnable Python dashboard shell | Agent-assisted: responsive page with static fictional panels, manual run instructions, and a small tested HTMX HTML-fragment interaction; no business logic |
+| 1 | Runnable Bottle + Jinja2 dashboard shell | Agent-assisted: responsive Jinja2 page with fictional panels, manual run instructions, and a minimal tested HTMX HTML-fragment interaction; no business logic |
 | 2 | First project projection contract and fixture | Human-led Python dataclass/typed domain model; agent may style template and write fixture harness |
 | 3 | Work-state summary and filter | Human defines rules; HTMX updates filtered project list without full reload |
 | 4 | Exact-context navigation | Agent can style safe links; human approves source reference semantics |
@@ -85,4 +96,4 @@ Autonomous dispatch/executor, private integrations, full scheduling, automatic d
 
 ## Implementation gate
 
-Do not start issue #2 until PR #1 is reviewed/merged and the first-slice Python web framework is agreed. The MVP scope and stack may be revised after the first functional prototype.
+Do not start issue #2 until PR #1 is reviewed/merged; the working first-slice stack is Bottle + Jinja2 + HTMX, subject to the human's final review of the implementation issue. The MVP scope and stack may be revised after the first functional prototype.
