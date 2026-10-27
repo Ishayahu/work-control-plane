@@ -494,7 +494,20 @@ Retain operation approvals and the relevant audit history with the corresponding
 - **Project-local authority:** a project's state, reason for being paused, checkpoints and history remain at the canonical project location. The Control Plane cache is reconstructible.
 - **Architecture boundary:** generic logic consumes a stable application-facing contract, without hardcoding GitHub/Sheets data formats. The contract should emerge from real vertical slices rather than speculative interfaces.
 
-The next design question is **how the dashboard discovers which projects exist and resolves each project's canonical location**. A recoverable index of source references is not itself a second copy of project state; its placement and reconstruction mechanism are undecided.
+### Discovery via the existing context router (working decision, 2026-10-27)
+
+Use the already-existing **`Ishayahu/main-ai`** context repository as the discovery/navigation root instead of creating another canonical task/project list in Work Control Plane:
+
+- `INDEX.md` routes natural-language intents to relevant context; it is not automatically a complete machine-readable list of individual tasks.
+- `initiatives/REGISTRY.md` lists registered initiatives and pointers; `links/SOURCES.md` and linked cards may resolve additional canonical systems. Do not read dated snapshot statuses in `projects/Pnnn.md` as current truth.
+- Registered top-level work can use its existing identifier (e.g. `P031`, `central-asia`) with an appropriate namespace when uniqueness requires one. Load concrete child tasks from their canonical sources (e.g. Google Sheets, GitHub Issues); don't replicate every leaf in the router.
+- Distinguish a source of **subject-matter knowledge / artifacts** from the source responsible for **current task status, deadlines and commitments**. One logical task may reference multiple sources with different ownership. E.g. P031's current planner status is in the Google Sheet while code and technical history are in `Ishayahu/work-control-plane`.
+- The in-memory Control Plane projection may cache these results; it is disposable and reconstructible. Reconcile duplicated representations explicitly rather than assuming identical titles or multiple links imply distinct tasks.
+- Before applying this design in code, check that the existing registry covers the root activities needed for the dashboard; don't presume it is exhaustive or machine-readable without adaptation.
+
+### Normalized read/write contract (to define with concrete examples)
+
+The shared model is **only the shape of the information returned to logic** (e.g. task ID, title, parent reference, completion criterion, status/uncertainty, effective tags, blockers, evidence and source references); it is **not** a mandate to rewrite all existing source documents in the same format. A connector knows which external system owns each field and translates approved changes back into that system, with conflict detection and explicit read-only restrictions as needed. Deriving an effective state in the dashboard is different from authorizing a change to an external source. Work out the minimum actual fields and write operations on a representative task before fixing a schema.
 
 ## 16. Open architectural questions
 
