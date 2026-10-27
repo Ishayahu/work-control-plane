@@ -446,7 +446,7 @@ A useful engineering heuristic for this project is:
 
 ## 10. MVP implementation stack (working decision, 2026-10-26)
 
-**Provisional choice:** Python backend with server-rendered HTML and HTMX for modest interactivity. This reflects current MVP expectations, not an irreversible framework commitment. The specific Python web framework remains undecided.
+**Provisional choice:** Python backend with server-rendered HTML and HTMX for modest interactivity. **Initial trial:** Bottle for HTTP/routing with portable Jinja2 templates and HTMX HTML-fragment updates. This is a reversible first experiment, not a commitment to Bottle for the full product; possible trials of Pyramid or other frameworks remain open.
 
 Why:
 
