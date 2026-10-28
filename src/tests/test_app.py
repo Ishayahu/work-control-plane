@@ -32,6 +32,10 @@ def test_full_page_and_default_empty_inbox():
     assert 'class="card inbox"' not in body
     assert "— ₽" in body and "Нет данных" in body
     assert 'hx-target="#task-switcher"' in body
+    assert 'id="ai-cost"' in body
+    assert "Расходы ИИ" in body and "За текущий месяц" in body
+    assert "— ₽" in body  # Unknown spending is not a confirmed zero.
+
 
 
 def test_htmx_returns_only_selected_jinja_fragment():
