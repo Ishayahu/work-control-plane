@@ -18,6 +18,7 @@ build/
 *.db
 instance/
 staticfiles/
+src/logic/model_matrix.json
 
 # Secrets and local config
 .env
