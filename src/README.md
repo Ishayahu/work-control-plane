@@ -1,9 +1,45 @@
-# Application source placeholder
+# MVP-01: local runnable dashboard shell
 
-The initial application will be introduced only after review of the planning PR (#1).
+This intentionally small **Bottle + Jinja2 + HTMX** application is a display-only first slice. The **only working UI action** is selecting one of four task-state tabs: the browser requests server-rendered HTML and HTMX replaces the corresponding fragment **without reloading the page**. No task logic, provider/LLM calls, messaging, voice, financial computation, calendar sync, personal data, persistence or external writes are included. All other controls are visibly disabled.
 
-Working first-slice stack: **Bottle + Jinja2 + HTMX** for server-rendered HTML and targeted fragment updates; no React/Vite scaffold. Keep substantive Python logic independent from Bottle route handlers so another framework (Pyramid/Flask) can be compared later, but do not create unused abstraction directories.
+## Start on your own computer
 
-The first implementation slice should produce a truly runnable responsive HTML shell with fictional data, plus **one minimal HTMX request returning a fragment from a Python handler**. Other domain functionality may remain expressly unimplemented.
+From `src/`:
 
-Domain rules, project contracts, scheduler logic and real integrations are reserved for human-led incremental development. Do not pre-generate a speculative function hierarchy.
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r requirements.txt
+python app.py
+```
+
+Open http://127.0.0.1:8080/ . The server deliberately binds to **127.0.0.1 only**. **Never expose this unauthenticated preview to the Internet.** Production deployment must pass the separately planned HTTPS/mTLS authentication gate.
+
+To see conditional Inbox overflow with **fictional messages only**, open:
+- http://127.0.0.1:8080/?demo_inbox=0
+- http://127.0.0.1:8080/?demo_inbox=3
+- http://127.0.0.1:8080/?demo_inbox=20
+
+## How the HTMX demonstration works
+
+The four tabs are ordinary hyperlinks. Without HTMX, clicking loads `/?view=ai` as a full page. With HTMX, each tab declares:
+
+- `hx-get="/task-view/ai"` — issue GET to the Bottle route;
+- `hx-target="#task-switcher"` — target the selected task panel;
+- `hx-swap="outerHTML"` — replace the old panel node with the **Jinja2 HTML fragment** returned by the route.
+
+The Bottle handler calls `_task_switcher.html`, not a Bottle-specific inline template or a JSON API. A pinned HTMX script is loaded from the jsDelivr CDN, with SRI. Network access to that CDN is needed for enhanced interactions; the ordinary links remain usable without it.
+
+## Run tests
+
+```sh
+python -m pip install pytest
+python -m pytest -q tests
+python -m compileall -q app.py
+```
+
+Mobile baseline: 390 × 844 viewport; static outer page and internally-scrollable overflowing Inbox/answer/task panels. Smaller viewports, zoom and open keyboard may require scrolling as an accessibility fallback. On desktop, the task-state categories are simultaneously visible.
+
+## Next
+
+After review and merging this slice, implement a typed task projection and source adapters. Prioritize backend model routing/failover (issue #23) and read-only e-mail/Telegram inbox ingestion followed by explicit triage (reply, create/link task, mark handled), with no auto-conversion of messages into tasks. Real outbound replies need the owner's authorization or pre-approved scoped rule.
