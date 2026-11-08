@@ -22,7 +22,13 @@ legacy_planner_snapshot:
     progress_percent: 0
     notes: "Dashboard — только представление, не новый источник истины. Domain state остаётся в GitHub, Drive/Sheets, Calendar, ChatGPT и других профильных системах. Связан с P014 «Personal Knowledge Gateway» как слоем доступа/интеграции и P021 «Планировщик задач» как слоем распределения времени и внимания. Главная цель — снять с Ишаяу административные накладные расходы: контроль множества параллельных проектов, восстановление контекста и постоянный hand-holding ИИ. Исполнительный цикл: пользователь задаёт маршрут/чекпойнты и допустимый бюджет; ИИ доходит до чекпойнта, фиксирует состояние, проверяет остаток бюджета Work и наличие блокирующей зависимости от пользователя; если бюджет остаётся и решение пользователя не требуется — продолжает к следующему чекпойнту, иначе останавливается и явно показывает, что именно требуется."
 current_work:
-  architecture: "docs/architecture.md (working changes in PR #1; not yet merged)"
-  implementation_plan: "docs/implementation-plan.md (PR #1)"
+  architecture: "docs/architecture.md (planning PR #1 merged 2026-10-27)"
+  implementation_plan: "docs/implementation-plan.md (planning PR #1 merged 2026-10-27)"
   planning_pull_request: "https://github.com/Ishayahu/work-control-plane/pull/1"
-  note: "The historical planner milestone and percentage predate current architecture discussions; do not treat them as a live checkpoint."
+  first_dashboard_shell: "Issue #2 marked completed and closed 2026-10-28; functionality has not been independently runtime-verified in this session."
+  immediate_next: "Issue #3: agree the minimal human-owned Task projection and render it with safe fixtures in the existing Bottle/Jinja2/HTMX dashboard; do not block this on full Telegram, AI, or PKG integration."
+  next_project_checkpoint: "Verify fixture-backed render of a task/readiness card, with owner action, dependency, due time, source and uncertainty, and verify that the dashboard works on the phone."
+  urgent_pilot: "MEOC event requests from authorized email and Telegram; use case 10 in docs/use-cases.md (2026-11-08). First show a duplicate-safe event request and equipment readiness card with fictional input; later connect sources separately."
+  intake_dependencies: "General inbox issue #25; personal-account Telegram read-only boundary issue #21; public deployment requires security gate #20. Do not auto-send or ingest all dialogs."
+  priority_note: "Owner on 2026-11-08 requested accelerating dashboard work to prevent late preparation of MEOC event equipment. This is a priority use case within existing P031, not a second project or permission for autonomous code/merging."
+  note: "Historical planner milestone and percentage are not live progress. Continue by small human-reviewed slices; PR #1 and issue #2 have advanced since the old checkpoint."
