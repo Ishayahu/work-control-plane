@@ -170,6 +170,23 @@ The dashboard should not silently start work merely because it was opened. Openi
 
 **Acceptance criterion:** if the user opens the dashboard during a free calendar interval, the system immediately shows a sensible best-fit next activity and direct entry into it without requiring an extra "what should I do?" request.
 
+## Use case 10 — automatic MEOC event-request readiness (priority pilot, 2026-11-08)
+
+An event-service request reaches the owner through **email or Telegram** days before an event. The owner may not open it promptly. The control plane must not rely on the owner forwarding a message into ChatGPT or remembering to ask for preparation.
+
+**Desired behavior (end-state, not a claim of implemented functionality):**
+
+1. A **narrowly authorized, read-only intake adapter** discovers eligible email and Telegram requests from approved accounts/chats; capture source identifiers, time received, source link, and attachment references. Handle duplicate/replayed notifications idempotently. Do not assume Telegram Bot API can read a personal account: see [#21](https://github.com/Ishayahu/work-control-plane/issues/21) and general Inbox [#25](https://github.com/Ishayahu/work-control-plane/issues/25).
+2. Classify an **event request** separately from an ordinary incoming message. Extract venue, date, readiness deadline, equipment required, software, network/VPN, projector/TV, slides and open questions, marking anything unconfirmed as **unknown**. Not every incoming message becomes a task. The owner approves the classification or policy before any automatic task creation.
+3. Compare requirements with existing **MEOC equipment facts** using the authoritative private [MEOC IT protocol](https://github.com/Ishayahu/main-ai/blob/main/policies/MEOC-EVENT-IT.md). Treat identifiers such as `компьютер а 503` and the **7th-floor laptop in a bag labeled 503** as different until physical identity is confirmed; never infer that all installed components are freshly tested.
+4. Produce a **readiness projection**: ready/needs check/missing/unknown, preparatory tasks and dependencies, earliest sensible preparation window, latest safe time, and a setup/teardown distinction. Do not replace the equipment's usage time with the room's general readiness deadline.
+5. With explicit authorization, stage received presentations in an appropriate **Google Drive intake folder**, preserving original source and avoiding duplicate files. There is no automatic USB transfer or local installation unless a separately authorized local agent exists; show those as physical actions.
+6. Alert the owner **before the preparation deadline**, not just immediately before the event. Escalate only genuinely unresolved human actions. A completed installation or a planned test is not evidence that device readiness was checked.
+
+**First narrow acceptance test, before real connectors:** With two fictional requests (one email, one Telegram) for the same upcoming MEOC event and a small equipment fixture, show one deduplicated request and an accurate readiness/dependency card with provenance, unknowns, a specific owner action, and a deadline. A replay does not create a second request or task. No email/Telegram/Drive write occurs. Reuse the existing dashboard shell and minimal Task projection; do not construct a parallel task system or delay this fixture test for the full PKG, agent dispatcher, or every planned dashboard feature.
+
+**Later live acceptance test:** In a user-approved selected email source and Telegram chat, one new real request is discovered without manual forwarding and a preparation warning is issued before the deadline; attachments may be staged in Drive only after access and storage policies are approved. Background service, credentials, notifications, and access authorization are **not yet implemented**.
+
 ## MVP acceptance test
 
 The MVP should handle all of these simultaneously:
