@@ -88,6 +88,19 @@ A directed dependency from a task onto another task or a condition (e.g. awaitin
 - **Source of truth**: task-owned reference to canonical storage; no compulsory shared physical file format.
 - **AI assessment**: individual criterion values, evidence, timestamps and assessment version.
 
+### Evidence provenance and epistemic status (owner requirement, 2026-11-10)
+
+The Control Plane's future ingestion and AI-assessment boundary must preserve the **origin and evidential status of material claims**, not merely a confidence score on a final status. This extends the existing `Reference` / `AI assessment` evidence concept; it does **not** create an independent source of truth for domain information.
+
+- Distinguish directly inspected records/observations, a person's report about their own experience, third-party/user-reported claims, interpretation or hypothesis, and independently corroborated conclusions. A source reference establishes **where a claim came from**, not necessarily whether the claim is true.
+- **No silent evidence promotion:** repeating a claim in conversation, receiving confirmation to an assistant's leading question, or seeing the assistant's earlier summary is not independent corroboration. Preserve attribution and uncertainty through summaries, checkpoints, task assessments, and outgoing prompts to different AI providers.
+- When available, relate an important claim/assessment to source ID, evidence kind/status, time or freshness, contradicting evidence, and human correction. Do not infer invisible motives or universal patterns from an isolated record.
+- Keep user-facing prose natural; the evidence layer should constrain factual assertions without forcing a technical status label in every sentence. An explicit human instruction/authorization and the factual certainty of a claim remain separate facets.
+- **Immediate MVP: placeholder only.** In the first typed fixture-backed task projection, reserve the smallest human-reviewed source/provenance + `unverified/unknown` representation needed to avoid a breaking redesign; a static marker/contract suffices. **No automatic truth classification, claim database, assertion of verification, new connector, paid model calls, or new UI workflow at this stage.** Flesh out typed claim-level ledger, deterministic non-promotion guard, and regression tests as a later separately reviewed slice under [issue #22](https://github.com/Ishayahu/work-control-plane/issues/22).
+- Source rule: [main-ai `policies/CORE.md` §2](https://github.com/Ishayahu/main-ai/blob/main/policies/CORE.md); candidate product case: `CAND-022` in the existing systemic-audit Google Sheet.
+
+
+
 This is a conceptual model for discussion; physical Python classes, field constraints, relationship cardinality, completion behavior of parent tasks and source adapters should be decided through small real use cases rather than created wholesale now.
 
 ## 4. Work state: durable facts, computed blocks and transient dialogue state (revised, 2026-10-28)
