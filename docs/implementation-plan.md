@@ -105,6 +105,20 @@ For the first interaction, demonstrate request method and URL (`hx-get`/`hx-post
 - Track human time, agent time/cost, rework, and actual verified output. A faster agent run alone is not proof of better productivity.
 - For experiments on Mail Bridge, apply the method separately there; do not silently change its workflow based on this dashboard plan.
 
+## Future local-first AI dispatcher (owner decision, 2026-11-10)
+
+**Tracking:** [issue #30 — local-first AI dispatcher](https://github.com/Ishayahu/work-control-plane/issues/30). **Not a prerequisite** for the current MVP/task projection slices. The owner values technical learning independently of eventual API savings; do not assume those savings will be negligible or large without measuring.
+
+Keep the existing web dashboard as the default architecture. Prefer local execution for suitable work in three ascending tiers:
+
+1. **No model needed:** run deterministic Python/JavaScript logic for explicit dependencies, status rules, existing user policy, and readily structured commands.
+2. **Browser model (first AI implementation):** attempt small local intent classification, function selection and bounded context-source selection inside the browser, using WASM/CPU and WebGPU/GPU when actually available (e.g. LiteRT.js). WebNN/NPU is a capability to detect and revisit, **not an assumed Android browser feature**; Chrome Android does not presently establish usable direct NPU inference. Fall back without breaking the dashboard.
+3. **Native Android module (long-term option only):** investigate NPU inference through supported Android/vendor runtimes if browser-based inference proves insufficient; a native mobile app is not yet a decided deliverable.
+
+An authorized deterministic policy layer still controls access to data, sends, edits, costs, and cloud escalation; model output cannot confer permission. The server must remain functional when a phone or its local inference is unavailable (particularly scheduled jobs). Avoid copying canonical source content into the dashboard merely to run local inference.
+
+**Pilot acceptance:** test on the existing Galaxy Note20 Ultra without new hardware; compare identical representative requests for deterministic rules, browser-local inference and the current low-cost cloud route. Check correctness, confidence/fallback behavior, latency, device support, memory/energy where feasible, and **actual avoided API cost**, not just the proportion of routed requests. Keep the routing/model adapter substitutable. Preserve a future integration point with **Promptitect** when that stage is reached; do not invent its interface now.
+
 ## Deliberately deferred
 
 Autonomous dispatch/executor, private integrations, full scheduling, automatic dependency resolution, external writes, generalized ingestion and multi-user support. These require independent decisions and explicit authorization.
