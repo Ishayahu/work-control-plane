@@ -27,6 +27,7 @@ current_work:
   planning_pull_request: "https://github.com/Ishayahu/work-control-plane/pull/1"
   first_dashboard_shell: "Issue #2 marked completed and closed 2026-10-28; functionality has not been independently runtime-verified in this session."
   immediate_next: "Issue #3: agree the minimal human-owned Task projection and render it with safe fixtures in the existing Bottle/Jinja2/HTMX dashboard; do not block this on full Telegram, AI, or PKG integration."
+  claim_provenance: "Owner decision 2026-11-10: plan evidence-origin/epistemic-status protocol from initial fixture-based Task projection as a non-verifying placeholder (issue #3). Full typed assessment/provenance and non-promotion guard are a later human-reviewed slice in issue #22; details in docs/architecture.md and docs/implementation-plan.md. Do not block current MVP or invent a claim database."
   next_project_checkpoint: "Verify fixture-backed render of a task/readiness card, with owner action, dependency, due time, source and uncertainty, and verify that the dashboard works on the phone."
   urgent_pilot: "MEOC event requests from authorized email and Telegram; use case 10 in docs/use-cases.md (2026-11-08). First show a duplicate-safe event request and equipment readiness card with fictional input; later connect sources separately."
   intake_dependencies: "General inbox issue #25; personal-account Telegram read-only boundary issue #21; public deployment requires security gate #20. Do not auto-send or ingest all dialogs."
