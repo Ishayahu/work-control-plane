@@ -49,6 +49,9 @@ Domain vocabulary and evaluation criteria should be primarily **human-readable, 
 - The human developer decides the criterion vocabulary, meanings, status precedence, uncertainty semantics and any weights/thresholds.
 - The model assesses facts; it does not unilaterally set final status or grant authorization to send, spend, delete, or dispatch.
 - Preserve evidence/source refs, timestamps, rule/prompt/model versions and human corrections; do not make a paid model call for every page render.
+- **Evidence provenance protocol (agreed 2026-11-10):** already at the first task-projection fixture/contract, reserve a tiny, explicit **placeholder** for source attribution and evidence status (`unknown` / `unverified` for unverified fixture claims), without implementing a claim database or LLM verifier. The eventual classification/assessment layer must retain claim origin and epistemic status across repeated agent turns and provider handoffs; a reported or model-inferred statement must never become an independently verified fact without new corroborating evidence. Design and enforcement belong to [issue #22](https://github.com/Ishayahu/work-control-plane/issues/22), separate from approval/security logic.
+- **Acceptance of MVP stub:** fixture renders with a clearly non-verified/source-known label or equivalent typed value; tests ensure missing evidence does not default to 'verified'. No extra data source, provider calls, final claim schema, or arbitrary attribution rules until the human reviews a real end-to-end example.
+
 - Initial work-state fixture/filter issues (#3–#4) may use **provided structured assessments** and Python deterministic rules. Actual LLM classification arrives as a later, separately reviewed vertical slice after input contracts and storage are settled.
 
 ## Optional personal Telegram connector (issue #21)
