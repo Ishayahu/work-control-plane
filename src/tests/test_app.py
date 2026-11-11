@@ -1,6 +1,10 @@
 """Pure-WSGI smoke tests; no real integrations and no data mutations."""
 from io import BytesIO
+from pathlib import Path
+import sys
 from urllib.parse import urlencode
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app import app, demo_messages
 
@@ -33,7 +37,9 @@ def test_full_page_and_default_empty_inbox():
     assert "— ₽" in body and "Нет данных" in body
     assert 'hx-target="#task-switcher"' in body
     assert 'id="ai-cost"' in body
-    assert "Расходы ИИ" in body and "За текущий месяц" in body
+    assert 'title="Расчётные расходы ИИ за текущий месяц"' in body
+    assert 'aria-label="Расчётные расходы ИИ за текущий месяц"' in body
+    assert "✦" in body
     assert "— ₽" in body  # Unknown spending is not a confirmed zero.
 
 
@@ -58,3 +64,11 @@ def test_inbox_examples_are_bounded_and_explicit():
     assert status.startswith("200")
     assert "20 · демонстрация" in body
     assert body.count('class="message"') == 20
+
+
+if __name__ == "__main__":
+    test_full_page_and_default_empty_inbox()
+    test_htmx_returns_only_selected_jinja_fragment()
+    test_invalid_fragment_is_rejected()
+    test_inbox_examples_are_bounded_and_explicit()
+    print("All tests passed successfully.")

@@ -14,19 +14,15 @@
   <header class="masthead">
     <a href="/" class="home-icon" aria-label="Главная" title="Главная">⌂</a>
     <div class="metric"><span>Бюджет</span><strong>— ₽</strong></div>
+    <div id="ai-cost" class="metric ai-cost" title="Расчётные расходы ИИ за текущий месяц"
+         aria-label="Расчётные расходы ИИ за текущий месяц">
+      <span class="ai-cost-icon" aria-hidden="true">✦</span>
+      <strong class="ai-cost-amount">— ₽</strong>
+    </div>
     <div class="metric next"><span>Следующее событие</span><strong>Нет данных</strong></div>
     <button class="all-tasks" type="button" disabled title="Каталог задач появится позже"
             aria-label="Все задачи и проекты: пока недоступно">☷</button>
   </header>
-
-  <!-- Static placeholder. The owner will wire rendering and live updates later. -->
-  <section id="ai-cost" class="ai-cost" aria-label="Расчётные расходы на ИИ за месяц">
-    <div class="ai-cost-description">
-      <strong>Расходы ИИ</strong>
-      <small>За текущий месяц · по тарифам</small>
-    </div>
-    <strong class="ai-cost-amount">— ₽</strong>
-  </section>
 
   <section class="card assistant" aria-label="Ассистент">
     <div class="card-title"><strong>✦ Ассистент</strong><span>Два режима · пока недоступны</span></div>

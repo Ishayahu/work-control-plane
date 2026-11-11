@@ -4,19 +4,17 @@ body{margin:0}
 button,input{font:inherit}
 button:disabled,input:disabled{cursor:not-allowed}
 .dashboard{height:100vh;height:100dvh;max-width:1100px;margin:auto;padding:12px;display:flex;flex-direction:column;gap:9px;overflow:hidden}
-.masthead{display:grid;grid-template-columns:42px minmax(0,1fr) minmax(0,1.25fr) 42px;gap:7px;flex:0 0 52px;min-width:0}
+.masthead{display:grid;grid-template-columns:42px minmax(0,1fr) minmax(0,0.8fr) minmax(0,1.2fr) 42px;gap:7px;flex:0 0 52px;min-width:0}
 .home-icon,.all-tasks{display:grid;place-items:center;border:0;border-radius:10px;background:#304e80;color:white;font-size:23px;text-decoration:none}
 .all-tasks:disabled{opacity:.6}
 .metric{min-width:0;display:flex;flex-direction:column;justify-content:center;padding:6px 10px;border-radius:10px;background:#fff;border:1px solid #e0e6ee}
 .metric span{font-size:11px;color:#74859c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .metric strong{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .metric.next strong{font-size:13px}
-/* Compact cost strip; a future HTMX response can replace #ai-cost. */
-.ai-cost{flex:0 0 38px;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 11px;border:1px solid #e0e6ee;border-radius:10px;background:#fff}
-.ai-cost-description{min-width:0;display:flex;flex-direction:column;gap:1px}
-.ai-cost-description strong{font-size:12px}
-.ai-cost-description small{font-size:10px;color:#74859c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ai-cost-amount{flex-shrink:0;font-size:16px;font-variant-numeric:tabular-nums}
+/* Compact cost indicator; a future HTMX response can replace #ai-cost. */
+.metric.ai-cost{flex-direction:row;align-items:center;justify-content:center;gap:5px;padding:6px 8px}
+.ai-cost-icon{font-size:13px;color:#304e80;flex-shrink:0;line-height:1}
+.ai-cost-amount{font-size:16px;font-variant-numeric:tabular-nums}
 
 .card{display:flex;flex-direction:column;min-height:0;padding:11px 12px;background:#fff;border:1px solid #e0e6ee;border-radius:11px}
 .card-title{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:0 0 auto;margin-bottom:7px}
@@ -43,6 +41,6 @@ button:disabled,input:disabled{cursor:not-allowed}
 .task-items{min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;border:1px solid #e8eef5;background:#f8fafc;padding:11px;border-radius:7px;font-size:12px}
 .task-items strong{font-size:13px}.task-items p{color:#53657a}.task-items small{color:#8190a3}
 .desktop-tasks{display:none}
-@media (min-width:760px){.dashboard{padding:20px;gap:13px}.masthead{grid-template-columns:48px minmax(0,1fr) minmax(0,1fr) 48px;flex-basis:58px}.assistant{flex-basis:145px}.reply{flex-basis:90px}.recommendation{flex-basis:95px}.inbox{flex-basis:155px}.mobile-tasks{display:none}.desktop-tasks{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.desktop-task{overflow:auto;background:#f8fafc;border:1px solid #e8eef5;border-radius:8px;padding:12px;font-size:12px}.desktop-task p{color:#667891}.desktop-task small{color:#8996a8}}
-@media (max-width:390px){.dashboard{padding:7px;gap:7px}.masthead{grid-template-columns:36px minmax(0,1fr) minmax(0,1.12fr) 36px;gap:5px;flex-basis:49px}.metric{padding:5px 6px}.metric span{font-size:10px}.metric strong{font-size:14px}.metric.next strong{font-size:11px}.card{padding:9px}.assistant{flex-basis:128px}.reply{flex-basis:77px}.recommendation{flex-basis:78px}}
+@media (min-width:760px){.dashboard{padding:20px;gap:13px}.masthead{grid-template-columns:48px minmax(0,1fr) minmax(0,0.8fr) minmax(0,1.2fr) 48px;flex-basis:58px}.assistant{flex-basis:145px}.reply{flex-basis:90px}.recommendation{flex-basis:95px}.inbox{flex-basis:155px}.mobile-tasks{display:none}.desktop-tasks{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.desktop-task{overflow:auto;background:#f8fafc;border:1px solid #e8eef5;border-radius:8px;padding:12px;font-size:12px}.desktop-task p{color:#667891}.desktop-task small{color:#8996a8}}
+@media (max-width:390px){.dashboard{padding:7px;gap:7px}.masthead{grid-template-columns:36px minmax(0,1fr) minmax(0,0.75fr) minmax(0,1.15fr) 36px;gap:5px;flex-basis:49px}.metric{padding:5px 6px}.metric span{font-size:10px}.metric strong{font-size:14px}.metric.next strong{font-size:11px}.metric.ai-cost{padding:5px 4px;gap:3px}.ai-cost-icon{font-size:11px}.ai-cost-amount{font-size:13px}.card{padding:9px}.assistant{flex-basis:128px}.reply{flex-basis:77px}.recommendation{flex-basis:78px}}
 @media (max-height:620px){.dashboard{overflow-y:auto;height:100dvh}.task-card{min-height:160px}}
