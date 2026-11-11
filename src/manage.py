@@ -59,13 +59,13 @@ def build_parser() -> argparse.ArgumentParser:
     for action in ("grant", "revoke"):
         cmd = roles_action_parser.add_parser(action)
         # manage.py (section)role (action)grant|revoke "name"
-        cmd.add_argument("name", required=True)
+        cmd.add_argument("name")
         # manage.py (section)role (action)grant|revoke "name" "permission"
-        cmd.add_argument("permission", required=True)
+        cmd.add_argument("permission")
     # manage.py (section)role (action)show
     cmd = roles_action_parser.add_parser("show")
     # manage.py (section)role (action)show "name"
-    cmd.add_argument("name", required=True)
+    cmd.add_argument("name")
 
     # manage.py (section)user
     users_parser = first_level_parser.add_parser("user", help="Пользователи")
@@ -74,7 +74,7 @@ def build_parser() -> argparse.ArgumentParser:
     # manage.py (section)user (action)create
     cmd = users_action_parser.add_parser("create")
     # manage.py (section)user (action)create "name"
-    cmd.add_argument("name", required=True)
+    cmd.add_argument("name")
     # manage.py (section)user (action)create "name" --family FAMILY_ID
     cmd.add_argument("--family", type=int, metavar="FAMILY_ID")
     # manage.py (section)user (action)create "name" --family FAMILY_ID --role ROLE
@@ -86,7 +86,7 @@ def build_parser() -> argparse.ArgumentParser:
     # manage.py (section)user (action)find
     cmd = users_action_parser.add_parser("find")
     # manage.py (section)user (action)find "user_id"
-    cmd.add_argument("user_id", type=int, required=True)
+    cmd.add_argument("user_id", type=int)
 
     # manage.py (section)family
     families_parser = first_level_parser.add_parser("family", help="Семьи и членство")
@@ -97,30 +97,30 @@ def build_parser() -> argparse.ArgumentParser:
     # manage.py (section)family (action)create
     cmd = families_action_parser.add_parser("create")
     # manage.py (section)family (action)create "name"
-    cmd.add_argument("name", required=True)
+    cmd.add_argument("name")
     # manage.py (section)family (action)create "name" --admin USER_ID
     cmd.add_argument("--admin", type=int, required=True, metavar="USER_ID")
     # manage.py (section)family (action)members
     cmd = families_action_parser.add_parser("members")
     # manage.py (section)family (action)members "family_id"
-    cmd.add_argument("family_id", type=int, required=True)
+    cmd.add_argument("family_id", type=int)
     # manage.py (section)family (action)add-member
     cmd = families_action_parser.add_parser("add-member")
     # manage.py (section)family (action)add-member --family_id INT
-    cmd.add_argument("--family_id", required=True, type=int, metavar="FAMILY_ID")
-    # manage.py (section)family (action)add-member --family_id INT --user_id INT
-    cmd.add_argument("--user_id", required=True, type=int, metavar="USER_ID")
-    # manage.py (section)family (action)add-member --family_id INT --user_id INT --role ROLE
+    cmd.add_argument("--family", required=True, type=int, metavar="FAMILY_ID")
+    # manage.py (section)family (action)add-member --family INT --user INT
+    cmd.add_argument("--user", required=True, type=int, metavar="USER_ID")
+    # manage.py (section)family (action)add-member --family INT --user INT --role ROLE
     cmd.add_argument("--role", metavar="ROLE", help=" (по умолчанию user)")
     # manage.py (section)family (action)set-role --family_id FAMILY_ID --user_id USER_ID --role ROLE
     cmd = families_action_parser.add_parser("set-role")
-    cmd.add_argument("family_id", type=int, required=True, metavar="FAMILY_ID")
-    cmd.add_argument("user_id", type=int, required=True, metavar="USER_ID")
-    cmd.add_argument("role", required=True)
-    # manage.py (section)family (action)remove-member --family_id FAMILY_ID --user_id USER_ID
+    cmd.add_argument("--family", type=int, metavar="FAMILY_ID")
+    cmd.add_argument("--user", type=int, metavar="USER_ID")
+    cmd.add_argument("role")
+    # manage.py (section)family (action)remove-member --family FAMILY_ID --user USER_ID
     cmd = families_action_parser.add_parser("remove-member")
-    cmd.add_argument("family_id", type=int, required=True, metavar="FAMILY_ID")
-    cmd.add_argument("user_id", type=int, required=True, metavar="USER_ID")
+    cmd.add_argument("--family", type=int, metavar="FAMILY_ID")
+    cmd.add_argument("--user", type=int, metavar="USER_ID")
     return parser
 
 
