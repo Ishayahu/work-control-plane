@@ -108,7 +108,7 @@ def build_parser() -> argparse.ArgumentParser:
     # manage.py (section)family (action)find
     cmd = families_action_parser.add_parser("find")
     # manage.py (section)family (action)find --user USER_ID
-    cmd.add_argument("--user", type=int, metavar="USER_ID")
+    cmd.add_argument("--user", required=True, type=int, metavar="USER_ID")
     # manage.py (section)family (action)members
     cmd = families_action_parser.add_parser("members")
     # manage.py (section)family (action)members "family_id"
@@ -125,7 +125,7 @@ def build_parser() -> argparse.ArgumentParser:
     cmd = families_action_parser.add_parser("set-role")
     cmd.add_argument("--family", required=True, type=int, metavar="FAMILY_ID")
     cmd.add_argument("--user", required=True, type=int, metavar="USER_ID")
-    cmd.add_argument("role")
+    cmd.add_argument("--role", required=True, metavar="ROLE")
     # manage.py (section)family (action)remove-member --family FAMILY_ID --user USER_ID
     cmd = families_action_parser.add_parser("remove-member")
     cmd.add_argument("--family", required=True, type=int, metavar="FAMILY_ID")
